@@ -9,6 +9,7 @@
 
 
 ###Taiga json notes:
-* [![Source](https://tree.taiga.io/project/last_link-taiga-jira-importer/)]
+* [Source](https://tree.taiga.io/project/last_link-taiga-jira-importer/)
+
 ###Jira
 * project id is 24
