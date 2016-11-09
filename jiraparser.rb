@@ -1,38 +1,54 @@
 # http://www.nokogiri.org/tutorials/searching_a_xml_html_document.html
 require 'nokogiri'
 require 'iconv'
-# require 'nokogiri'
 puts "Running jira xml reader."
-
 
 def only_valid_chars(text)
   return "" unless text
-  text# = Iconv.conv('UTF-8//IGNORE', 'UTF-8', text)
-#   iconv -f utf-8 -t utf-8 -c entities.txt
+  text
   File.open('entities.xml') do |f|
   #  this removes bad control characters
   text = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
-#   text.gsub(/[\u0001-\u001A]/ , '')
-#   hash = JSON.parse(f.read)  #***HERE***
-#   p hash
   end
-#   iconv -f utf-8 -t utf-8 -c text
+
   text.encode('UTF-8', 'UTF-8', {:invalid => :replace, :undef => :replace, :replace => ""})
-  #remove control characters, keep white space and line endings
   
-  #= =~ tr/\x00-\x08\x0B\x0C\x0E-\x19//d;
-  #text.gsub(/[^ [^[:cntrl:]] | [\s] ]/,'')
-#   text=text.gsub('\xff'.gsub("\\x",""))
   return text
 end
 
-#text = "08-10-06 "
-#text = "08-10-06 \u0080\u0093 Appr \n \r  \r\n ABC"
-#only_valid_chars(text)
-
 @doc = Nokogiri::XML(only_valid_chars(File.open("entities.xml")))
+#run this to check that whole document reads
+# puts @doc.xpath("*")
 
-puts @doc.xpath("//Project")
+#list project names
+puts "Available Projects:"
+projectlist= @doc.xpath("//Project/@name")
+# //Project/@name
+# type: Nokogiri::XML::NodeSet
+for item in projectlist
+    puts item
+end
+
+# projectlist.xpath("/@nam").each do |node|
+#   # some instruction
+# end
+
+
+puts projectlist.class.name.to_s
+puts projectlist[0].to_s
+
+# projectlist1="sup"
+# print projectlist1
+# puts @doc.css("Project name")
+# //Project[@name]
+# @name
+#select project or do all projects w/ 4 loop
+projectname="TAIGA JIRA IMPORTER"
+# get specific project
+puts @doc.xpath("//Project[@name='"+projectname+"']")
+# [@lang='en']
+
+puts "selected project: "+projectname
 
 # "Some string \u000F more".gsub(/[\u0001-\u001A]/ , '')
 # puts @doc.xpath("//AuditChangedValue")
