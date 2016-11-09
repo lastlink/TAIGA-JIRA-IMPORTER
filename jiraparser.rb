@@ -25,9 +25,9 @@ puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
 # //Project/@name
 # type: Nokogiri::XML::NodeSet
-for item in projectlist
-    puts item
-end
+# for item in projectlist
+#     puts item
+# end
 
 # projectlist.xpath("/@nam").each do |node|
 #   # some instruction
@@ -43,9 +43,15 @@ puts projectlist[0].to_s
 # //Project[@name]
 # @name
 #select project or do all projects w/ 4 loop
+# <Project id="10119" name="TAIGA JIRA IMPORTER" url="https://tree.taiga.io/project/last_link-taiga-jira-importer/backlog" lead="username" description="build a parser to convert jira xml to taiga and taiga json to jira xml." key="TJI" counter="10" assigneetype="3" avatar="10510" originalkey="TJI" projecttype="software"/>
+
 projectname="TAIGA JIRA IMPORTER"
+puts  "project info: id:"
 # get specific project
-puts @doc.xpath("//Project[@name='"+projectname+"']")
+currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
+# currentproject[0]['name']
+# use id to get other info
+puts currentproject[0]['id'].to_i.class.name
 # [@lang='en']
 
 puts "selected project: "+projectname
