@@ -1,6 +1,7 @@
 # http://www.nokogiri.org/tutorials/searching_a_xml_html_document.html
 require 'nokogiri'
 require 'iconv'
+require 'json'
 puts "Running jira xml reader."
 
 def only_valid_chars(text)
@@ -56,46 +57,22 @@ puts currentproject[0]['id'].to_i.class.name
 
 puts "selected project: "+projectname
 
-# "Some string \u000F more".gsub(/[\u0001-\u001A]/ , '')
-# puts @doc.xpath("//AuditChangedValue")
 
 
-# puts "Running jira xml reader."
-# #list jira projects
 
-# #get project name
-# puts "Give project name"
 
-# projectName=""
-# get project info
-# get project objects
-# @doc = Nokogiri::XML(File.open("entities.xml"))
-# Project
 
-# //@name
-# problem at: OSPropertyText
-# value here has the problem
-# <OSPropertyString id="12559">
-#         <value><![CDATA[#java.util.Map
-# openIssuesActionignore
-# releaseDate31/Oct/16
-# buildTypeno-build
-# username]]></value>
-#     </OSPropertyString>
-#     <OSPropertyString id="12560">
-#         <value><![CDATA[#java.util.Map
-# openIssuesActionignore
-# releaseDate31/Oct/16
-# buildTypeno-build
-# username]]></value>
-#     </OSPropertyString>
-# Unicode: 0xc looks like FF
+#output to taiga jira file(s)
+tempHash = {
+    "key_a" => "val_a",
+    "key_b" => "val_b"
+}
+# create json file
+# File.open("taigaoutput.json","w") do |f|
+#   f.write(tempHash.to_json)
+# end
 
-# wont do this <OSPropertyString id="12560">
-# not working: OSWorkflowEntry
-#working paths:
-# AuditItem Avatar ChangeItem newstring ConfigurationContext EventType OSPropertyEntry OSPropertyNumber
-# OSPropertyString value descriptor
+
 
 
 # puts (@doc.xpath("//Project")).to_s
