@@ -58,14 +58,14 @@ puts @doc.xpath("//Project")
 # openIssuesActionignore
 # releaseDate31/Oct/16
 # buildTypeno-build
-# usertheefunk]]></value>
+# username]]></value>
 #     </OSPropertyString>
 #     <OSPropertyString id="12560">
 #         <value><![CDATA[#java.util.Map
 # openIssuesActionignore
 # releaseDate31/Oct/16
 # buildTypeno-build
-# usertheefunk]]></value>
+# username]]></value>
 #     </OSPropertyString>
 # Unicode: 0xc looks like FF
 
