@@ -2,7 +2,10 @@
 require 'nokogiri'
 require 'iconv'
 require 'json'
+#gem install each
+
 puts "Running jira xml reader."
+
 
 def only_valid_chars(text)
   return "" unless text
@@ -26,9 +29,9 @@ puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
 # //Project/@name
 # type: Nokogiri::XML::NodeSet
-# for item in projectlist
-#     puts item
-# end
+for item in projectlist
+    puts item
+end
 
 # projectlist.xpath("/@nam").each do |node|
 #   # some instruction
@@ -52,15 +55,55 @@ puts  "project info: id:"
 currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
 # currentproject[0]['name']
 # use id to get other info
-puts currentproject[0]['id'].to_i.class.name
+puts currentproject[0]['id']#.to_i.class.name
 # [@lang='en']
 
 puts "selected project: "+projectname
 
+puts "epic link ids"
+puts @doc.xpath("//AuditItem[@objectName='"+ currentproject[0]['name']+"']/@logId")
+# <AuditItem id="10276" logId="10500" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
+#     <AuditItem id="10277" logId="10501" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
+#     <AuditItem id="10278" logId="10501" objectType="USER" objectId="username" objectName="username" objectParentId="1" objectParentName="JIRA Internal Directory"/>
+#     <AuditItem id="10279" logId="10502" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
+#     <AuditItem id="10280" logId="10503" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
+#     <AuditItem id="10281" logId="10504" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
 
+epiclist=
+[
+{"attachments": [], "assigned_to": nil, "version": 1, "tags": [], "client_requirement": false, "description": "test epic", "related_user_stories": [{"user_story": 2, "order": 1477950018264}, {"user_story": 1, "order": 1477950012880}], "owner": "", "epics_order": 1477948242204, "ref": 10, "watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"blocked_note_html": "", "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "epics_order": 1477948242204, "owner": 164863, "client_requirement": false, "ref": 10, "is_blocked": false, "status": 654412, "description_html": "<p>test epic</p>", "subject": "Jira Epic", "team_requirement": false, "color": "#d3d7cf", "attachments": [], "description": "test epic"}, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:10:42+0000", "is_hidden": false}], "blocked_note": "", "custom_attributes_values": {}, "created_date": "2016-10-31T21:10:42+0000", "subject": "Jira Epic", "status": "New", "is_blocked": false, "color": "#d3d7cf", "modified_date": "2016-10-31T21:10:42+0000", "team_requirement": false}]
+ 
 
+tempjson=
+    {
+"transfer_token": nil,
+"default_task_status": "New",
+"userstories_csv_uuid": nil,
+"slug": currentproject[0]['name'].downcase.tr!(" ", "-").to_s,
+"default_us_status": "New",
+"issue_types": [{"order": 1, "name": "Bug", "color": "#89BAB4"}, {"order": 2, "name": "Question", "color": "#ba89a8"}, {"order": 3, "name": "Enhancement", "color": "#89a8ba"}],
+"total_fans": 0,
+"name": currentproject[0]['name'],
+"logo": nil,
+"videoconferences_extra_data": nil,
+"is_issues_activated": true,
+"issuecustomattributes": [],
+"default_priority": "Normal",
+"total_fans_last_year": 0,
+"wiki_links": [],
+"created_date": "2016-10-31T14:13:34+0000",
+"creation_template": "scrum",
+"default_issue_status": "New",
+"is_epics_activated": true,
+"tasks_csv_uuid": nil,
+"default_epic_status": "New",
+"epics": epiclist
+    }
 
-
+print tempjson.to_json
+# File.open("taigaoutput.json","w") do |f|
+#   f.write(tempjson.to_json)
+# end
 
 #output to taiga jira file(s)
 tempHash = {
