@@ -120,13 +120,66 @@ sprint="TJI Sprint 1" # can be null
 
 #get user stories use .push to add to array
 storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
+# <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
 
-for item in storylist
-    puts item
+#create issue list
+issuelist=[]
+puts "generating issue type list"
+for item in @doc.xpath("//IssueType")
+    case item['name']
+    when "Sub-task"
+        issuelist['Sub-task']=item
+    when "Epic"
+        issuelist['Epic']=item
+    when "Story"
+        issuelist['Story']=item
+    when "Task"
+        issuelist['Task']=item
+    when "Bug"
+        issuelist['Bug']=item
+    else
+        puts item
+    end 
 end
 
+
+
+for item in storylist
+    if item['type']==issuelist["Story"]['id']
+        puts item 
+end
+
+
+tasklist=@doc.xpath("//Issue")
+
+# sub task has type 10000, main story has type 10000
+   # <Issue id="10384" key="TJI-2" number="2" project="10119" reporter="theefunk" creator="theefunk" type="10002" summary="Download data files" priority="3" status="10000" created="2016-10-31 08:19:32.842" updated="2016-10-31 09:12:52.173" votes="0" watches="1" workflowId="10384"/>
+# come from public.jiraissue table
+# get type 
+# <IssueType id="10000" sequence="0" name="Sub-task" style="jira_subtask" description="The sub-task of the issue" iconurl="/images/icons/issuetypes/subtask_alternate.png"/>
+#     <IssueType id="10001" name="Epic" description="gh.issue.epic.desc" iconurl="/images/icons/issuetypes/epic.svg"/>
+#     <IssueType id="10002" name="Story" description="gh.issue.story.desc" iconurl="/images/icons/issuetypes/story.svg"/>
+#     <IssueType id="10003" name="Task" style="" description="A task that needs to be done." avatar="10318"/>
+#     <IssueType id="10004" name="Bug" style="" description="A problem which impairs or prevents the functions of the product." 
+
+
+
+# <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
+#     <IssueLink id="10099" linktype="10100" source="10383" destination="10388" sequence="1"/>
+#     <IssueLink id="10100" linktype="10100" source="10383" destination="10389" sequence="2"/>
+#     <IssueLink id="10101" linktype="10100" source="10383" destination="10390" sequence="3"/>
+#  <IssueLink id="10104" linktype="10200" source="10392" destination="10384"/>
+
+#get task list for each
+#    <Issue id="10387" key="TJI-5" number="5" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10000" summary="generate project on jira" description="sub task description" priority="3" status="3" created="2016-10-31 08:21:43.651" updated="2016-10-31 09:05:34.24" votes="0" watches="1" workflowId="10387"/>
+    # <Issue id="10388" key="TJI-6" number="6" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="export jira xml" priority="3" status="10000" created="2016-10-31 08:21:58.772" updated="2016-10-31 08:21:58.772" votes="0" watches="1" workflowId="10388"/>
+    # <Issue id="10389" key="TJI-7" number="7" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="generate project on taiga" priority="3" status="10000" created="2016-10-31 08:22:08.497" updated="2016-10-31 08:22:08.497" votes="0" watches="1" workflowId="10389"/>
+    # <Issue id="10390" key="TJI-8" number="8" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="export taiga json" priority="3" status="10000" created="2016-10-31 08:22:17.426" 
+
+
+
 storysubject="Download data files"
-    # <Issue id="10384" key="TJI-2" number="2" project="10119" reporter="theefunk" creator="theefunk" type="10002" summary="Download data files" priority="3" status="10000" created="2016-10-31 08:19:32.842" updated="2016-10-31 09:12:52.173" votes="0" watches="1" workflowId="10384"/>
+ 
 
 
 singleuserstory={"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": storysubject, "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": "2016-10-31T21:17:03+0000", "backlog_order": 0, "milestone": "TJI Sprint 1", "kanban_order": 1477944450673, "owner": "", "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "", "subject": "TAIGA JIRA IMPORTER", "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": "", "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T20:07:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": ["TAIGA JIRA IMPORTER", "Download data files"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:16:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": "TJI Sprint 1"}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:17:04+0000", "is_hidden": false}], "blocked_note": "", "created_date": "2016-10-31T20:07:30+0000", "description": "", "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": "1/2", "role": "Back"}]}.to_json
