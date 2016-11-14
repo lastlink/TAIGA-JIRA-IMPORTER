@@ -9,30 +9,34 @@ puts "Running jira xml reader."
 
 def only_valid_chars(text)
   return "" unless text
-#   text
+  xmltext=""
   File.open(text) do |f|
   #  this removes bad control characters
-  text = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
+  xmltext = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
   end
 
-  text.encode('UTF-8', 'UTF-8', {:invalid => :replace, :undef => :replace, :replace => ""})
+  xmltext.encode('UTF-8', 'UTF-8', {:invalid => :replace, :undef => :replace, :replace => ""})
   
-  return text
+  return xmltext
 end
 
 @doc = Nokogiri::XML(only_valid_chars("entities.xml"))
 @activeObjects=Nokogiri::XML(only_valid_chars("activeobjects.xml"))
 #run this to check that whole document reads
 # puts @doc.xpath("*")
-
+# puts "testing new xml:"
+# xpath doesnt work w/ nokogiri activeobjects.xml
+# puts @activeObjects.xpath("//table")
+# puts @activeObjects.css('row')
+# puts "end testing..."
 #list project names
 puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
 # //Project/@name
-# type: Nokogiri::XML::NodeSet
-for item in projectlist
-    puts item
-end
+# # type: Nokogiri::XML::NodeSet
+# for item in projectlist
+#     puts item
+# end
 # Fall216
 # Software Startup Initiative
 # Gym Counter
@@ -223,8 +227,10 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 #would it be best to go backwards w/ sprints? or I could generate a list and count updated
 # puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
 
-puts "active object.xml rows"
-puts @activeObjects.xpath("*")#//*
+puts "active object.xml rows:"
+# puts @activeObjects.xpath("//xml")#//*
+puts @activeObjects.css('row')
+puts "end new xml..."
 # having some issues querying this xml only * works
 # need to get sprints from activeobject.xml
 #<row>
