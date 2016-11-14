@@ -166,7 +166,7 @@ for item in @doc.xpath("//IssueType")
     when "Bug"
         issuelist['Bug']=item
     else
-        puts "issue of: "+item['name']+" is mising"
+        puts "issue of: "+item['name']+" is missing"
     end 
 end
 
@@ -211,6 +211,13 @@ puts "end custom field value...."
 user_stories=[]
    
 
+puts "get assigned sprint:"
+puts @doc.xpath("//UserHistoryItem[@entityId='48']")
+# <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
+#sprints 
+# <UserHistoryItem id="10846" type="Sprint" entityId="47" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 1"/>
+#     <UserHistoryItem id="10847" type="Sprint" entityId="48" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 2"/>
+
 for item in storylist
     if item['type']==issuelist["Story"]['id']
         # puts item 
@@ -231,7 +238,7 @@ for item in storylist
     end #2016-10-31 08:21:43.651"
         #2016-10-31T20:07:30+0000
     #if subtask then....
-    # {"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": storysubject, "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": "2016-10-31T21:17:03+0000", "backlog_order": 0, "milestone": "TJI Sprint 1", "kanban_order": 1477944450673, "owner": "", "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "", "subject": "TAIGA JIRA IMPORTER", "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": "", "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T20:07:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": ["TAIGA JIRA IMPORTER", "Download data files"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:16:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": "TJI Sprint 1"}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:17:04+0000", "is_hidden": false}], "blocked_note": "", "created_date": "2016-10-31T20:07:30+0000", "description": "", "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": "1/2", "role": "Back"}]}
+    
 end
 
 
@@ -359,7 +366,7 @@ tempjson=
 "timeline": timeline # is this required?
     }
 # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
-print tempjson
+# print tempjson
 # print JSON.pretty_generate(tempjson) #.to_json
 
 # File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
