@@ -9,8 +9,8 @@ puts "Running jira xml reader."
 
 def only_valid_chars(text)
   return "" unless text
-  text
-  File.open('entities.xml') do |f|
+#   text
+  File.open(text) do |f|
   #  this removes bad control characters
   text = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
   end
@@ -20,7 +20,8 @@ def only_valid_chars(text)
   return text
 end
 
-@doc = Nokogiri::XML(only_valid_chars(File.open("entities.xml")))
+@doc = Nokogiri::XML(only_valid_chars("entities.xml"))
+@activeObjects=Nokogiri::XML(only_valid_chars("activeobjects.xml"))
 #run this to check that whole document reads
 # puts @doc.xpath("*")
 
@@ -213,12 +214,32 @@ user_stories=[]
 
 puts "get assigned sprint:"
 sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
-puts @doc.xpath("//UserHistoryItem[@entityId='48']")
+# puts @doc.xpath("//UserHistoryItem[@entityId='48']")
 # <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
 #sprints 
 # basically if custom field is sprint, then userhistory entityid
 # <UserHistoryItem id="10846" type="Sprint" entityId="47" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 1"/>
 #     <UserHistoryItem id="10847" type="Sprint" entityId="48" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 2"/>
+#would it be best to go backwards w/ sprints? or I could generate a list and count updated
+# puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
+
+puts "active object.xml rows"
+puts @activeObjects.xpath("*")#//*
+# having some issues querying this xml only * works
+# need to get sprints from activeobject.xml
+#<row>
+    #   <boolean>false</boolean>
+    #   <integer xsi:nil="true"/>
+    #   <integer xsi:nil="true"/>
+    #   <string xsi:nil="true"/>
+    #   <integer>48</integer>
+    #   <string>TJI Sprint 2</string>
+    #   <integer>24</integer>
+    #   <integer xsi:nil="true"/>
+    #   <boolean>false</boolean>
+    #   <integer xsi:nil="true"/>
+    # </row>
+# puts @doc.xpath("//CustomFieldValue [@customfield='10000']/@stringvalue")
 
 for item in storylist
     if item['type']==issuelist["Story"]['id']
