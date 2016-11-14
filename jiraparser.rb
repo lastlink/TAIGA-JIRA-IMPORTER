@@ -212,9 +212,11 @@ user_stories=[]
    
 
 puts "get assigned sprint:"
+sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
 puts @doc.xpath("//UserHistoryItem[@entityId='48']")
 # <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
 #sprints 
+# basically if custom field is sprint, then userhistory entityid
 # <UserHistoryItem id="10846" type="Sprint" entityId="47" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 1"/>
 #     <UserHistoryItem id="10847" type="Sprint" entityId="48" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 2"/>
 
