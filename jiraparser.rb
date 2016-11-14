@@ -228,8 +228,10 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 # puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
 
 puts "active object.xml rows:"
-# puts @activeObjects.xpath("//xml")#//*
-puts @activeObjects.css('row')
+puts @activeObjects.xpath("//row")#//*
+# puts @activeObjects.css('row')
+
+# need where int is 24
 puts "end new xml..."
 # having some issues querying this xml only * works
 # need to get sprints from activeobject.xml
