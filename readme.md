@@ -1,4 +1,6 @@
-# Jira Taiga Importer:
+# (In DEVELOPMENT)
+# Jira Taiga Importer: BETA
+* V:0.05
 
 ##Description:
 * Goal is to build a parser that will convert jira xml to taiga json format and a parser that does that opposite.
