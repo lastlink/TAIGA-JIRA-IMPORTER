@@ -22,12 +22,14 @@ def only_valid_chars(text)
 end
 def removeInteger(text)
   return 0 unless text
+#   xmltext=""
   text=text.to_s
   text=text.gsub("<integer>", "")
   text=text.gsub("</integer>", "")
   
   return text.to_i
 end
+
 
 @doc = Nokogiri::XML(only_valid_chars("entities.xml"))
 @activeObjects=Nokogiri::XML(File.open("activeobjects.xml"))
@@ -39,7 +41,20 @@ end
 # puts @activeObjects.css('row').to_s
 @activeObjects.remove_namespaces! # need to do this to actually use
 #name spaces are confusing
-# puts @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row")
+
+sprintboard="TJI board"
+puts "searching object xml:"
+sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+sprintobject= removeInteger(sprintobject[0].search('integer')[0])
+puts sprintobject
+# puts sprintid.xpath('/*')
+ # id
+# puts sprintstrings[0].s
+
+puts "end search"
+
+exit
+
 
 # /@integer='10120'
 # data tableName="AO_60DB71_RAPIDVIEW
@@ -107,30 +122,6 @@ currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
 # use id to get other info
 puts currentproject[0]['id']#.to_i.class.name
 # [@lang='en']
-sprintboard="TJI board"
-puts "searching object xml:"
-# sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-# sprintobject= removeInteger(sprintobject[0].search('integer')[0])
-# board it
-puts @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id']+"']/entityId")
-
-    # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
-    # then do a sub string and search for tji board then to get the id
-    #  <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
-
-# get board id from here entity id
-# 
-# puts sprintobject
-# puts sprintid.xpath('/*')
- # id
-# puts sprintstrings[0].s
-
-puts "end search"
-exit
-
-
-
-
 
 puts "selected project: "+projectname
 
