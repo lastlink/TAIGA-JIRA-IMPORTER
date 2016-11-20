@@ -13,6 +13,7 @@ def only_valid_chars(text)
   File.open(text) do |f|
   #  this removes bad control characters
   xmltext = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
+  
   end
 
   xmltext.encode('UTF-8', 'UTF-8', {:invalid => :replace, :undef => :replace, :replace => ""})
@@ -21,13 +22,28 @@ def only_valid_chars(text)
 end
 
 @doc = Nokogiri::XML(only_valid_chars("entities.xml"))
-@activeObjects=Nokogiri::XML(only_valid_chars("activeobjects.xml"))
+@activeObjects=Nokogiri::XML(File.open("activeobjects.xml"))
 #run this to check that whole document reads
 # puts @doc.xpath("*")
 # puts "testing new xml:"
 # xpath doesnt work w/ nokogiri activeobjects.xml
 # puts @activeObjects.xpath("//table")
-# puts @activeObjects.css('row')
+# puts @activeObjects.css('row').to_s
+@activeObjects.remove_namespaces! # need to do this to actually use
+#name spaces are confusing
+puts @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row")
+# /@integer='10120'
+# data tableName="AO_60DB71_RAPIDVIEW
+# /*[name()='backup']/*[name()='data']
+#valid query
+# puts @activeobjects.xpath("/")
+
+# puts @activeObjects.at('//data[@tableName="AO_60DB71_RAPIDVIEW"]/row')
+# .at('//Relationship[@Id="rId3"]')
+# puts @doc.xpath('//*')
+# @doc2 = Nokogiri::XML(@activeObjects.css('row').to_s)
+# puts @doc2
+# puts @activeObjects.xpath('//boolean')
 # puts "end testing..."
 #list project names
 puts "Available Projects:"
@@ -218,6 +234,9 @@ user_stories=[]
 
 puts "get assigned sprint:"
 sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
+
+
+
 # puts @doc.xpath("//UserHistoryItem[@entityId='48']")
 # <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
 #sprints 
@@ -228,10 +247,14 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 # puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
 
 puts "active object.xml rows:"
-puts @activeObjects.xpath("//row")#//*
-# puts @activeObjects.css('row')
+# puts @activeObjects.xpath("//string")#//*
 
+
+# puts @activeObjects.css('row') #.xpath('@integer="48"')
+# object=
+# puts object[10]
 # need where int is 24
+# <row>      <string>SprintOpenClose</string>      <string>{"operation":"CLOSE"}</string>      <string>SPRINT</string>      <integer>29</integer>      <integer>10</integer>      <integer>1476594639825</integer>      <string>blaineh7</string>    </row>
 puts "end new xml..."
 # having some issues querying this xml only * works
 # need to get sprints from activeobject.xml
