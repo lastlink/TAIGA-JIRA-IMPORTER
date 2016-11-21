@@ -112,7 +112,7 @@ puts "searching object xml:"
 # sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
 # sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 # board it
-puts @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id']+"']/entityId")
+puts @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id']+"']/@entityId]")
 
     # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
     # then do a sub string and search for tji board then to get the id
