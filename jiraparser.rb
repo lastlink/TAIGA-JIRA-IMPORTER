@@ -3,7 +3,7 @@ require 'nokogiri' # provides support for xpath queries
 require 'iconv' # used for cleaning bad control characters
 require 'json' # used to export to json
 require 'date'
-
+# require 'active_support/core_ext'
 # require 'datetime'
 #gem install each
 
@@ -24,6 +24,25 @@ def only_valid_chars(text)
   return xmltext
 end
 
+def moveDay(end_date)
+    return end_date + 1.day
+end
+def move2Weeks(startdate)
+    return startdate + 2.weeks
+end
+
+def boolean(boolI)
+    if boolI==1 then
+        return true
+    end
+    return false
+end
+
+def removeColon(text)
+  text=text.to_s
+  text=text.gsub(":", "") 
+  return text.to_s
+end
 def removeInteger(text)
   return 0 unless text
   text=text.to_s
@@ -38,7 +57,7 @@ def removeTag(text,tag)
   text=text.gsub("<"+tag+">", "")
   text=text.gsub("</"+tag+">", "")
   
-  return text.to_i
+  return text.to_s
 end
 
 def getBoardId(id,jira_entities,jira_active)
@@ -320,14 +339,22 @@ puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
 puts "get sprints"
 # puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
-sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")[0]
+sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
 # get start date if bool true
-startdate=removeInteger(sprintlist.search('integer')[5])
-end_date= removeInteger(sprintlist.search('integer')[1])
+# startdate=removeInteger(sprintlist.search('integer')[5])
+# end_date= removeInteger(sprintlist.search('integer')[1])
+
+
 
 # timems = datetime.datetime.fromtimestamp(float(item['TimeMs']['$numberLong']) / 1e3)
-puts DateTime.strptime(startdate.to_s,'%Q')
-puts DateTime.strptime(end_date.to_s,'%Q') 
+t=Time.now
+puts t.class.name
+puts t.strftime("%a")
+# startdate = DateTime.strptime(startdate.to_s,'%Q')
+# end_date = DateTime.strptime(end_date.to_s,'%Q')
+# puts startdate.class.name
+# puts startdate.strftime("%Y-%m-%d")
+# puts end_date.strftime("%Y-%m-%d")
 
 # dates are a timestamp, need to convert, if bool true otherwise should auto generate w/ 2 week interverals
 
@@ -338,13 +365,44 @@ puts "end get sprints"
 # <data tableName="AO_60DB71_SPRINT">
 
 puts sprintobject
-exit
+
     # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
     # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
 # taiga requires start and end dates for all sprints while jira does not
+
+end_date=DateTime.now
+puts end_date
 milestones=[]
-newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
-milestones.push(newmilestone)
+puts "each sprint"
+for sprint in sprintlist
+    # puts sprint
+    # puts sprint.search('boolean')[0]
+    # puts removeTag(sprint.search('boolean')[1],"boolean")
+    puts removeTag(sprint.search('boolean')[1],"boolean")
+    if  removeTag(sprint.search('boolean')[1],"boolean") == "true" then
+        startdate=removeInteger(sprint.search('integer')[5])
+        end_date= removeInteger(sprint.search('integer')[1])
+        startdate = DateTime.strptime(startdate.to_s,'%Q')
+        end_date = DateTime.strptime(end_date.to_s,'%Q')
+    else
+        startdate=end_date.next_day(1)   # moveDay(end_date)
+        end_date=startdate.next_day(14) # move2Weeks(start_date)
+        # puts startdate.to_s + ": " + end_date.to_s
+    end
+    # puts startdate.strftime("%Y-%m-%d")
+    # puts sprint.search('string')[1]
+    # puts sprint.search('string')[0]
+    # end_date.strftime("%Y-%m-%d")
+    # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
+    newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": startdate.to_s}
+    puts newmilestone.to_s
+    milestones.push(newmilestone)
+end
+
+# puts milestones.to_s
+exit
+# newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
+# milestones.push(newmilestone)
 # {"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
 
 for item in storylist
