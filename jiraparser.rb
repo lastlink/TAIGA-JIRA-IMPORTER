@@ -319,7 +319,9 @@ puts "get sprints"
 # puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")[0]
 # get start date if bool true
-puts removeInteger(sprintlist.search('integer')[1])
+startdate= removeInteger(sprintlist.search('integer')[1])
+# timems = datetime.datetime.fromtimestamp(float(item['TimeMs']['$numberLong']) / 1e3)
+puts datetime.datetime.fromtimestamp(float(startdate) / 1e3)
 # dates are a timestamp, need to convert, if bool true otherwise should auto generate w/ 2 week interverals
 
 puts "end get sprints"
