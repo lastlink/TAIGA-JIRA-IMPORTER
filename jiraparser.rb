@@ -294,13 +294,22 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 puts "board id function"
 # projectid=currentproject[0]['id'].to_s
 puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
-puts getBoardId(currentproject[0]['id'],jira_entities,jira_active)
+tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
+
+puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"']")
+# sprintobject=removeInteger(sprintobject[0].search('integer')[0])
+# now need to get active sprints ids
+# sprintArray=[]
+# <data tableName="AO_60DB71_SPRINT">
 
 puts sprintobject
 exit
     # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
     # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
-milestones=[{"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
+milestones=[]
+newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
+milestones.push(newmilestone)
+# {"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
 
 for item in storylist
     if item['type']==issuelist["Story"]['id']
