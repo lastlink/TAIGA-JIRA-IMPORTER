@@ -29,6 +29,14 @@ def removeInteger(text)
   
   return text.to_i
 end
+def removeTag(text,tag)
+  return 0 unless text
+  text=text.to_s
+  text=text.gsub("<"+tag+">", "")
+  text=text.gsub("</"+tag+">", "")
+  
+  return text.to_i
+end
 
 def getBoardId(id,jira_entities,jira_active)
     @doctemp = Nokogiri::XML(only_valid_chars(jira_entities))
@@ -289,6 +297,18 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 #     <UserHistoryItem id="10847" type="Sprint" entityId="48" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 2"/>
 #would it be best to go backwards w/ sprints? or I could generate a list and count updated
 # puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
+    # <row>  
+    # <boolean>false</boolean>
+    #   <integer nil="true"/>
+    #   <integer>1479136680000</integer>
+    #   <string nil="true"/>
+    #   <integer>47</integer>
+    #   <string>TJI Sprint 1</string>
+    #   <integer>24</integer>
+    #   <integer nil="true"/>
+    #   <boolean>true</boolean>
+    #   <integer>1477923500196</integer>
+    # </row>
 
 # getsprint board name
 puts "board id function"
@@ -297,7 +317,10 @@ puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
 puts "get sprints"
 # puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
-puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
+sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")[0]
+# get start date if bool true
+puts removeInteger(sprintlist.search('integer')[1])
+# dates are a timestamp, need to convert, if bool true otherwise should auto generate w/ 2 week interverals
 
 puts "end get sprints"
 # sprintobject=removeInteger(sprintobject[0].search('integer')[0])
@@ -309,6 +332,7 @@ puts sprintobject
 exit
     # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
     # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
+# taiga requires start and end dates for all sprints while jira does not
 milestones=[]
 newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
 milestones.push(newmilestone)
@@ -322,7 +346,11 @@ for item in storylist
         #need to do points and sprint linked to, sprint order
         #need to figure out order
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue")
-        
+        # sprints/milestones
+    #     <CustomFieldValue id="10495" issue="10383" customfield="10000" stringvalue="47"/>
+    # <CustomFieldValue id="10497" issue="10384" customfield="10000" stringvalue="47"/>
+    # <CustomFieldValue id="10499" issue="10391" customfield="10000" stringvalue="48"/>
+    # <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
         if points.size==0
             points="?"
         else
