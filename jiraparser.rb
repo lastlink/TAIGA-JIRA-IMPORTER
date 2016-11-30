@@ -290,53 +290,17 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 #would it be best to go backwards w/ sprints? or I could generate a list and count updated
 # puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
 
-puts "active object.xml rows:"
-# puts @activeObjects.xpath("//string")#//*
-
-
-# puts @activeObjects.css('row') #.xpath('@integer="48"')
-# object=
-# puts object[10]
-# need where int is 24
-# <row>      <string>SprintOpenClose</string>      <string>{"operation":"CLOSE"}</string>      <string>SPRINT</string>      <integer>29</integer>      <integer>10</integer>      <integer>1476594639825</integer>      <string>blaineh7</string>    </row>
-puts "end new xml..."
-# having some issues querying this xml only * works
-# need to get sprints from activeobject.xml
-#<row>
-    #   <boolean>false</boolean>
-    #   <integer xsi:nil="true"/>
-    #   <integer xsi:nil="true"/>
-    #   <string xsi:nil="true"/>
-    #   <integer>48</integer>
-    #   <string>TJI Sprint 2</string>
-    #   <integer>24</integer>
-    #   <integer xsi:nil="true"/>
-    #   <boolean>false</boolean>
-    #   <integer xsi:nil="true"/>
-    # </row>
-# puts @doc.xpath("//CustomFieldValue [@customfield='10000']/@stringvalue")
-
 # getsprint board name
 puts "board id function"
 # projectid=currentproject[0]['id'].to_s
 puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 puts getBoardId(currentproject[0]['id'],jira_entities,jira_active)
 
-puts "find sprint board name"
-puts "//SharePermissions[@param1'"+currentproject[0]['id'] +"']/@entityId"
-searchrequestid= @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id'] +"']/@entityId")[0]
-sprintboardname= @doc.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
-puts sprintboardname
-puts "end board find name"
-
-sprintboard=sprintboardname
-sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 puts sprintobject
 exit
     # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
     # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
-
+milestones=[{"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
 
 for item in storylist
     if item['type']==issuelist["Story"]['id']
@@ -451,7 +415,7 @@ tempjson=
 "total_story_points": total_story_points, # can be nil, place value to see graph
 "default_severity": "Normal",
 "us_statuses": [{"wip_limit": nil, "is_closed": false, "slug": "new", "order": 1, "is_archived": false, "name": "New", "color": "#999999"}, {"wip_limit": nil, "is_closed": false, "slug": "ready", "order": 2, "is_archived": false, "name": "Ready", "color": "#ff8a84"}, {"wip_limit": nil, "is_closed": false, "slug": "in-progress", "order": 3, "is_archived": false, "name": "In progress", "color": "#ff9900"}, {"wip_limit": nil, "is_closed": false, "slug": "ready-for-test", "order": 4, "is_archived": false, "name": "Ready for test", "color": "#fcc000"}, {"wip_limit": nil, "is_closed": true, "slug": "done", "order": 5, "is_archived": false, "name": "Done", "color": "#669900"}, {"wip_limit": nil, "is_closed": true, "slug": "archived", "order": 6, "is_archived": true, "name": "Archived", "color": "#5c3566"}],
-"milestones": [{"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}],
+"milestones": milestones,
 "task_statuses": [{"order": 1, "name": "New", "color": "#999999", "is_closed": false, "slug": "new"}, {"order": 2, "name": "In progress", "color": "#ff9900", "is_closed": false, "slug": "in-progress"}, {"order": 3, "name": "Ready for test", "color": "#ffcc00", "is_closed": true, "slug": "ready-for-test"}, {"order": 4, "name": "Closed", "color": "#669900", "is_closed": true, "slug": "closed"}, {"order": 5, "name": "Needs Info", "color": "#999999", "is_closed": false, "slug": "needs-info"}],
 "is_looking_for_people": false,
 "videoconferences": nil,
