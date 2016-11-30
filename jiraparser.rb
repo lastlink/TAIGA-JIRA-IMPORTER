@@ -20,6 +20,7 @@ def only_valid_chars(text)
   
   return xmltext
 end
+
 def removeInteger(text)
   return 0 unless text
   text=text.to_s
@@ -29,8 +30,23 @@ def removeInteger(text)
   return text.to_i
 end
 
-@doc = Nokogiri::XML(only_valid_chars("entities.xml"))
-@activeObjects=Nokogiri::XML(File.open("activeobjects.xml"))
+def getBoardId(id,jira_entities,jira_active)
+    @doctemp = Nokogiri::XML(only_valid_chars(jira_entities))
+    @activeObjectstemp=Nokogiri::XML(File.open(jira_active))
+    @activeObjectstemp.remove_namespaces!
+    searchrequestid= @doctemp.xpath("//SharePermissions[@param1='" + id.to_s + "']/@entityId")[0]
+    sprintboardname= @doctemp.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
+    sprintobject = @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboardname+"']")
+    sprintobject=removeInteger(sprintobject[0].search('integer')[0])
+    return sprintobject.to_s
+end
+
+
+
+jira_entities = "entities.xml"
+jira_active = "activeobjects.xml"
+@doc = Nokogiri::XML(only_valid_chars(jira_entities))
+@activeObjects=Nokogiri::XML(File.open(jira_active))
 #run this to check that whole document reads
 # puts @doc.xpath("*")
 # puts "testing new xml:"
@@ -112,21 +128,16 @@ puts "searching object xml:"
 # sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
 # sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 # board it
-puts @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id']+"']/@entityId]")
-
-    # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
-    # then do a sub string and search for tji board then to get the id
-    #  <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
-
-# get board id from here entity id
-# 
-# puts sprintobject
+sprintboard="TJI board"
+sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+sprintobject= removeInteger(sprintobject[0].search('integer')[0])
+puts sprintobject
 # puts sprintid.xpath('/*')
  # id
 # puts sprintstrings[0].s
 
 puts "end search"
-exit
+
 
 
 
@@ -304,6 +315,28 @@ puts "end new xml..."
     #   <integer xsi:nil="true"/>
     # </row>
 # puts @doc.xpath("//CustomFieldValue [@customfield='10000']/@stringvalue")
+
+# getsprint board name
+puts "board id function"
+# projectid=currentproject[0]['id'].to_s
+puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
+puts getBoardId(currentproject[0]['id'],jira_entities,jira_active)
+
+puts "find sprint board name"
+puts "//SharePermissions[@param1'"+currentproject[0]['id'] +"']/@entityId"
+searchrequestid= @doc.xpath("//SharePermissions[@param1='"+currentproject[0]['id'] +"']/@entityId")[0]
+sprintboardname= @doc.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
+puts sprintboardname
+puts "end board find name"
+
+sprintboard=sprintboardname
+sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+sprintobject= removeInteger(sprintobject[0].search('integer')[0])
+puts sprintobject
+exit
+    # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
+    # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
+
 
 for item in storylist
     if item['type']==issuelist["Story"]['id']
