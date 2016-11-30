@@ -24,11 +24,9 @@ def only_valid_chars(text)
   return xmltext
 end
 
-def moveDay(end_date)
-    return end_date + 1.day
-end
-def move2Weeks(startdate)
-    return startdate + 2.weeks
+def generateSlug(text)
+    text=text.to_s
+    return text.downcase.tr!(" ", "-").to_s
 end
 
 def boolean(boolI)
@@ -335,50 +333,22 @@ sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000'
 # getsprint board name
 puts "board id function"
 # projectid=currentproject[0]['id'].to_s
+
 puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
 puts "get sprints"
 # puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
-# get start date if bool true
-# startdate=removeInteger(sprintlist.search('integer')[5])
-# end_date= removeInteger(sprintlist.search('integer')[1])
-
-
-
-# timems = datetime.datetime.fromtimestamp(float(item['TimeMs']['$numberLong']) / 1e3)
-t=Time.now
-puts t.class.name
-puts t.strftime("%a")
-# startdate = DateTime.strptime(startdate.to_s,'%Q')
-# end_date = DateTime.strptime(end_date.to_s,'%Q')
-# puts startdate.class.name
-# puts startdate.strftime("%Y-%m-%d")
-# puts end_date.strftime("%Y-%m-%d")
-
-# dates are a timestamp, need to convert, if bool true otherwise should auto generate w/ 2 week interverals
-
-puts "end get sprints"
-# sprintobject=removeInteger(sprintobject[0].search('integer')[0])
-# now need to get active sprints ids
-# sprintArray=[]
-# <data tableName="AO_60DB71_SPRINT">
-
-puts sprintobject
-
-    # <SearchRequest id="10120" name="Filter for TJI board" author="theefunk" user="theefunk" request="project = TJI ORDER BY Rank ASC" favCount="0" nameLower="filter for tji board"/>
-    # <SharePermissions id="10220" entityId="10120" entityType="SearchRequest" type="project" param1="10119"/>
-# taiga requires start and end dates for all sprints while jira does not
 
 end_date=DateTime.now
-puts end_date
 milestones=[]
 puts "each sprint"
+# need to create a sprint list to keep track of task order
 for sprint in sprintlist
     # puts sprint
     # puts sprint.search('boolean')[0]
     # puts removeTag(sprint.search('boolean')[1],"boolean")
-    puts removeTag(sprint.search('boolean')[1],"boolean")
+    # puts removeTag(sprint.search('boolean')[1],"boolean")
     if  removeTag(sprint.search('boolean')[1],"boolean") == "true" then
         startdate=removeInteger(sprint.search('integer')[5])
         end_date= removeInteger(sprint.search('integer')[1])
@@ -394,13 +364,11 @@ for sprint in sprintlist
     # puts sprint.search('string')[0]
     # end_date.strftime("%Y-%m-%d")
     # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
-    newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": startdate.to_s}
-    puts newmilestone.to_s
+    newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": generateSlug(removeTag(sprint.search('string')[1],"string")), "order": 1, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": startdate.to_s}
+    # puts newmilestone.to_s
     milestones.push(newmilestone)
 end
-
-# puts milestones.to_s
-exit
+# exit
 # newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
 # milestones.push(newmilestone)
 # {"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
@@ -412,7 +380,15 @@ for item in storylist
         #generate user story list
         #need to do points and sprint linked to, sprint order
         #need to figure out order
+        puts "custom fields:"
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue")
+        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue")
+        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
+        sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
+        puts removeTag(sprintdetails.search('string')[1],"string")
+        # removeTag(sprint.search('boolean')[0],"boolean")
+        puts "end sprint details"
+        exit
         # sprints/milestones
     #     <CustomFieldValue id="10495" issue="10383" customfield="10000" stringvalue="47"/>
     # <CustomFieldValue id="10497" issue="10384" customfield="10000" stringvalue="47"/>
@@ -424,7 +400,7 @@ for item in storylist
             points=points[0].to_s
         end
         puts "points are:" +points
-        newstory={"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": item["updated"], "backlog_order": 0, "milestone": "TJI Sprint 1", "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": "TJI Sprint 1"}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": item["created"], "is_hidden": false}], "blocked_note": "", "created_date": item["created"], "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
+        newstory={"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": item["updated"], "backlog_order": 0, "milestone": removeTag(sprintdetails.search('string')[1],"string"), "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": removeTag(sprintdetails.search('string')[1],"string")}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": item["created"], "is_hidden": false}], "blocked_note": "", "created_date": item["created"], "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         user_stories.push(newstory)
     end #2016-10-31 08:21:43.651"
         #2016-10-31T20:07:30+0000
@@ -490,7 +466,7 @@ tempjson=
 "transfer_token": nil,
 "default_task_status": "New",
 "userstories_csv_uuid": nil,
-"slug": currentproject[0]['name'].downcase.tr!(" ", "-").to_s,
+"slug": generateSlug(currentproject[0]['name']),
 "default_us_status": "New",
 "issue_types": [{"order": 1, "name": "Bug", "color": "#89BAB4"}, {"order": 2, "name": "Question", "color": "#ba89a8"}, {"order": 3, "name": "Enhancement", "color": "#89a8ba"}],
 "total_fans": 0,
