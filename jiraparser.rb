@@ -295,8 +295,11 @@ puts "board id function"
 # projectid=currentproject[0]['id'].to_s
 puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
+puts "get sprints"
+# puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
+puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
 
-puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"']")
+puts "end get sprints"
 # sprintobject=removeInteger(sprintobject[0].search('integer')[0])
 # now need to get active sprints ids
 # sprintArray=[]
