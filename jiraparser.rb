@@ -2,6 +2,9 @@
 require 'nokogiri' # provides support for xpath queries
 require 'iconv' # used for cleaning bad control characters
 require 'json' # used to export to json
+require 'date'
+
+# require 'datetime'
 #gem install each
 
 puts "Running jira xml reader."
@@ -319,9 +322,13 @@ puts "get sprints"
 # puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")[0]
 # get start date if bool true
-startdate= removeInteger(sprintlist.search('integer')[1])
+startdate=removeInteger(sprintlist.search('integer')[5])
+end_date= removeInteger(sprintlist.search('integer')[1])
+
 # timems = datetime.datetime.fromtimestamp(float(item['TimeMs']['$numberLong']) / 1e3)
-puts datetime.datetime.fromtimestamp(float(startdate) / 1e3)
+puts DateTime.strptime(startdate.to_s,'%Q')
+puts DateTime.strptime(end_date.to_s,'%Q') 
+
 # dates are a timestamp, need to convert, if bool true otherwise should auto generate w/ 2 week interverals
 
 puts "end get sprints"
