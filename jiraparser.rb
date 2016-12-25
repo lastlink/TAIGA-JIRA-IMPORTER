@@ -193,12 +193,8 @@ dateprojectcreated="2016-10-31T14:13:34+0000"
 dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
 # <AuditLog id="10497" remoteAddress="10.24.30.18" created="2016-10-31 08:14:09.286" authorKey="theefunk" summary="Project created" category="projects" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER" authorType="1" eventSourceName="" longDescription="" searchField="theefunk taylor funk 10.24.30.18 project created projects taiga jira importer internal directory tji unassigned"/>
 # epics rather confusing since jira has multiple epics in audit log
-epiclist=
-[
-{"attachments": [], "assigned_to": nil, "version": 1, "tags": [], "client_requirement": false, "description": "test epic", "related_user_stories": [{"user_story": 2, "order": 1477950018264}, {"user_story": 1, "order": 1477950012880}], "owner": username[0], "epics_order": 1477948242204, "ref": 10, "watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"blocked_note_html": "", "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "epics_order": 1477948242204, "owner": username[2], "client_requirement": false, "ref": 10, "is_blocked": false, "status": 654412, "description_html": "<p>test epic</p>", "subject": "Jira Epic", "team_requirement": false, "color": "#d3d7cf", "attachments": [], "description": "test epic"}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:10:42+0000", "is_hidden": false}], "blocked_note": "", "custom_attributes_values": {}, "created_date": "2016-10-31T21:10:42+0000", "subject": "Jira Epic", "status": "New", "is_blocked": false, "color": "#d3d7cf", "modified_date": "2016-10-31T21:10:42+0000", "team_requirement": false}]
+epiclist=[]
 
-#ignore epics for now, pull ids from custom list
-epiclist=[] 
 
 # default wiki pages giving credit to self, really these could only come from confluence jira doesn't have a wiki'
 wikipages=[{"watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"content": "", "content_html": "", "attachments": [], "owner": 164863, "slug": "credits"}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:05:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["", "This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["", "<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:06+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>", "<p>This project has been converted from JIRA using <a href=\"https://github.com/lastlink\" target=\"_blank\" title=\"lastlink\">lastlink</a>'s parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:49+0000", "is_hidden": false}], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
@@ -359,6 +355,8 @@ storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
 # <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
 # puts "story list type" +storylist.class.name
 userstorylink={}
+
+# this pulls out all issues which is included but not limited to sub tasks, user stories epics, bugs
 for item in storylist
     if item['type']==issuelist["Story"]['id']
         # puts item 
@@ -447,8 +445,7 @@ for item in storylist
         
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
-        puts "cry"
-        status=  @doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
         case status
         when "To Do"
             status="New"
@@ -464,8 +461,6 @@ for item in storylist
         if status=="Done"
             finished_date=DateTime.parse(item["updated"],'%Q')
         end
-
-        # userstory=nil
         # get userstory link
         # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
@@ -478,26 +473,12 @@ for item in storylist
             sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
             sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
         end
-
-
         # get tags from labels
-        # <Label id="10005" issue="10383" label="jira"/>
-    # <Label id="10006" issue="10383" label="xml"/>
         tagslist=[]
-        puts "tags list"
-        puts item['id']
-        # <Label id="10002" issue="10387" label="jira"/>
         for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
             tagslist.push(tag)
             puts tagslist
         end
-        # foreach push to list
-        # tags=
-        # exit
-        # puts linkuserstoryid
-        # puts userstorylink[linkuserstoryid]
-        # puts sprintdetails
-        # exit
         newtask={"attachments": [],
             "tags": tagslist,
             "user_story": userstorylink[linkuserstoryid], # fun part....
@@ -522,6 +503,50 @@ for item in storylist
             "external_reference": nil,
             "description": item['description'].to_s}
         taskslist.push(newtask)
+    elsif item['type']==issuelist["Epic"]['id']
+        # epiclist.push(candy)
+
+        tagslist=[]
+        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+            tagslist.push(tag)
+            puts tagslist
+        end
+        linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
+        puts linkuserstoryid
+        exit
+        epic={
+            "attachments": [],
+            "assigned_to": null,
+            "version": backlogorder,
+            "tags": tagslist,
+            "client_requirement": false,
+            "description": item['description'].to_s,
+            "related_user_stories": [
+                {
+                "user_story": 2,
+                "order": backlogorder
+                },
+                {
+                "user_story": 1,
+                "order": backlogorder
+                }
+            ],
+            "owner": "",
+            "epics_order": backlogorder,
+            "ref": backlogorder,
+            "watchers": [],
+            "history": [],
+            "blocked_note": "",
+            "custom_attributes_values": {},
+            "created_date": DateTime.parse(item["created"],'%Q'),
+            "subject": item['summary'],
+            "status": "New",
+            "is_blocked": false,
+            "color": "#d3d7cf",
+            "modified_date": DateTime.parse(item["updated"],'%Q'),
+            "team_requirement": false
+            }
+        # epiclist.push(epic)
     end 
     backlogorder+=1
     #if subtask then....
