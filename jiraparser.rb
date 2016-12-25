@@ -430,7 +430,17 @@ for item in storylist
         if status=="Done"
             finished_date=DateTime.parse(item["updated"],'%Q')
         end
-        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": finished_date, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
+
+        tagslist=[]
+        # puts "tags list"
+        # puts item['id']
+        # <Label id="10002" issue="10387" label="jira"/>
+        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+            tagslist.push(tag)
+            puts tagslist
+        end
+
+        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": tagslist, "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": finished_date, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
         "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         userstorylink[item['id']]=backlogorder
         puts userstorylink[item['id']].to_s + " " + item['id']
@@ -470,14 +480,26 @@ for item in storylist
         end
 
 
-
-
+        # get tags from labels
+        # <Label id="10005" issue="10383" label="jira"/>
+    # <Label id="10006" issue="10383" label="xml"/>
+        tagslist=[]
+        puts "tags list"
+        puts item['id']
+        # <Label id="10002" issue="10387" label="jira"/>
+        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+            tagslist.push(tag)
+            puts tagslist
+        end
+        # foreach push to list
+        # tags=
+        # exit
         # puts linkuserstoryid
         # puts userstorylink[linkuserstoryid]
         # puts sprintdetails
         # exit
         newtask={"attachments": [],
-            "tags": [],
+            "tags": tagslist,
             "user_story": userstorylink[linkuserstoryid], # fun part....
             "ref": backlogorder,
             "watchers": [],
