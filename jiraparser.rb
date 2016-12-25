@@ -431,24 +431,47 @@ for item in storylist
             milestonelistorder["empty"]+=1
         end
         puts sprintNum
-        # removeTag(sprint.search('boolean')[0],"boolean")
-        # puts "end sprint details"
-        # exit
-        # sprints/milestones
-    #     <CustomFieldValue id="10495" issue="10383" customfield="10000" stringvalue="47"/>
-    # <CustomFieldValue id="10497" issue="10384" customfield="10000" stringvalue="47"/>
-    # <CustomFieldValue id="10499" issue="10391" customfield="10000" stringvalue="48"/>
-    # <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
         if points.size==0
             points="?"
         else
             points=points[0].to_s
             totaluserpoints+=points.to_f
+            if points=="0.5"
+                points="1/2"
+            end
         end
         puts "points are:" + points
         # next are dates, orders and comments
         # maybe issues next
-        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": 0, "milestone": sprintdetails, "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": username[2], "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {sprintid: removeTag(sprintdetails,"string")}}, "diff": {"milestone": [nil, sprintid], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
+ 
+    #   "slug": "new",
+    #   "name": "New",
+    #   "slug": "ready",
+    #   "name": "Ready",
+    #   "slug": "in-progress",
+    #   "name": "In progress",
+    #   "slug": "ready-for-test",
+    #   "name": "Ready for test",
+    #   "slug": "done",
+    #   "name": "Done",
+    #   "slug": "archived",
+    #   "name": "Archived",
+     #jira: 
+     # To Do In Progress Done
+        status=  @doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
+
+        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": 0, "milestone": sprintdetails, "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, 
+        "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         user_stories.push(newstory)
         
     end #2016-10-31 08:21:43.651"
@@ -456,6 +479,10 @@ for item in storylist
     #if subtask then....
     
 end
+
+# history
+# {"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": username[2], "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {sprintid: removeTag(sprintdetails,"string")}}, "diff": {"milestone": [nil, sprintid], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}
+
 total_story_points=totaluserpoints
 
 tasklist=@doc.xpath("//Issue")
@@ -541,7 +568,7 @@ tempjson=
 "issues": issues,
 "looking_for_people_note": "",
 "is_featured": false,
-"points": points,
+"points": [{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}],
 "anon_permissions": ["view_project", "view_epics", "view_tasks", "view_wiki_pages", "view_wiki_links", "view_us", "view_milestones", "view_issues"],
 "tasks": tasks,
 "total_story_points": total_story_points, # can be nil, place value to see graph
@@ -590,6 +617,14 @@ File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do 
   f.write(JSON.pretty_generate(tempjson))
 #   f.write(tempjson.to_json)
 #   f.puts JSON.pretty_generate(tempjson)
+end
+
+
+File.open("taigaproject1a.json","w") do |f|
+  File.open("taigaproject.1.json") do |o|
+    openjson=JSON(o.read)
+    f.write(JSON.pretty_generate(openjson))
+  end
 end
 
 # File.open("taigaoutput.json","w") do |f|
