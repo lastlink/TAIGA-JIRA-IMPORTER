@@ -162,16 +162,6 @@ sprintboard="TJI board"
 sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
 sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 puts sprintobject
-# puts sprintid.xpath('/*')
- # id
-# puts sprintstrings[0].s
-
-puts "end search"
-
-
-
-
-
 
 puts "selected project: "+projectname
 
@@ -196,16 +186,8 @@ puts "selected project: "+projectname
 # email 0, username 1, userid2
 username=["","",nil]
 puts "date created"
-# tempdate= @doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created") #@project='"+ currentproject[0]['id']+"']"")
-# puts tempdate
-# # candy= DateTime.now
-# # puts candy
-# puts DateTime.parse(tempdate.to_s,'%Q')
-# exit
-# checkpoint date
-# DateTime.strptime(startdate.to_s,'%Q')
-
-backlogorder=0
+# can't start at 0
+backlogorder=1
 
 dateprojectcreated="2016-10-31T14:13:34+0000"
 dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
@@ -230,7 +212,7 @@ issues=[]
 points=[{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}]
 
 # power is how to feel
-tasks=[]
+taskslist=[]
 
 total_story_points=nil # used to create graph
 
@@ -245,16 +227,13 @@ description=currentproject[0]['description']
 #in herit from project
 tags_colors=[["jira", nil], ["xml", nil]]
 
-sprint="TJI Sprint 1" # can be null
+sprint="TJI Sprint 1" # can be nil
 
 
 
 
 
-#get user stories use .push to add to array
-storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
-# <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
-puts "story list type" +storylist.class.name
+
 #create issue list
 issuelist=
     {
@@ -325,29 +304,6 @@ user_stories=[]
 puts "get assigned sprint:"
 sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
 
-
-
-# puts @doc.xpath("//UserHistoryItem[@entityId='48']")
-# <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
-#sprints 
-# basically if custom field is sprint, then userhistory entityid
-# <UserHistoryItem id="10846" type="Sprint" entityId="47" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 1"/>
-#     <UserHistoryItem id="10847" type="Sprint" entityId="48" username="theefunk" lastViewed="1477949037766" data="TJI Sprint 2"/>
-#would it be best to go backwards w/ sprints? or I could generate a list and count updated
-# puts @doc.xpath("//UserHistoryItem[@type='Sprint']")
-    # <row>  
-    # <boolean>false</boolean>
-    #   <integer nil="true"/>
-    #   <integer>1479136680000</integer>
-    #   <string nil="true"/>
-    #   <integer>47</integer>
-    #   <string>TJI Sprint 1</string>
-    #   <integer>24</integer>
-    #   <integer nil="true"/>
-    #   <boolean>true</boolean>
-    #   <integer>1477923500196</integer>
-    # </row>
-
 # getsprint board name
 puts "board id function"
 # projectid=currentproject[0]['id'].to_s
@@ -384,10 +340,6 @@ for sprint in sprintlist
         end_date=startdate.next_day(14) # move2Weeks(start_date)
         # puts startdate.to_s + ": " + end_date.to_s
     end
-    # puts startdate.strftime("%Y-%m-%d")
-    # puts sprint.search('string')[1]
-    # puts sprint.search('string')[0]
-    # end_date.strftime("%Y-%m-%d")
     sprintname= generateSlug(removeTag(sprint.search('string')[1],"string"))
     # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
     newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": sprintname, "order": milestoneorder, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": DateTime.parse(startdate.to_s,'%Q')}
@@ -400,12 +352,13 @@ for sprint in sprintlist
     milestoneorder+=1
     milestones.push(newmilestone)
 end
-# exit
-# newmilestone={"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}
-# milestones.push(newmilestone)
-# {"estimated_start": "2016-10-31", "watchers": [], "estimated_finish": "2016-11-14", "created_date": "2016-10-31T21:16:30+0000", "slug": "tji-sprint-1", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 1", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:30+0000"}, {"estimated_start": "2016-11-14", "watchers": [], "estimated_finish": "2016-11-28", "created_date": "2016-10-31T21:16:37+0000", "slug": "tji-sprint-2", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 2", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:37+0000"}, {"estimated_start": "2016-11-28", "watchers": [], "estimated_finish": "2016-12-12", "created_date": "2016-10-31T21:16:51+0000", "slug": "tji-sprint-3", "order": 1, "disponibility": 0.0, "name": "TJI Sprint 3", "closed": false, "owner": "", "modified_date": "2016-10-31T21:16:51+0000"}]
 totaluserpoints=0.0
 
+#get user stories use .push to add to array
+storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
+# <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
+# puts "story list type" +storylist.class.name
+userstorylink={}
 for item in storylist
     if item['type']==issuelist["Story"]['id']
         # puts item 
@@ -414,8 +367,8 @@ for item in storylist
         #need to do points and sprint linked to, sprint order
         #need to figure out order
         puts "custom fields:"
-        points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue")
-        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue")
+        points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
+        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
         puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
         puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
         sprintdetails=""
@@ -473,15 +426,81 @@ for item in storylist
         else
             status="New"
         end
-        
-        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": nil, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
+        finished_date=nil
+        if status=="Done"
+            finished_date=DateTime.parse(item["updated"],'%Q')
+        end
+        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": finished_date, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
         "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
-        backlogorder+=1
-        user_stories.push(newstory)
+        userstorylink[item['id']]=backlogorder
+        puts userstorylink[item['id']].to_s + " " + item['id']
         
-    end #2016-10-31 08:21:43.651"
-        #2016-10-31T20:07:30+0000
+        user_stories.push(newstory)
+    elsif item['type']==issuelist["Sub-task"]['id']
+        puts "cry"
+        status=  @doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
+        puts "custom fields:"
+        points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
+        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
+        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
+        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
+        sprintdetails=""
+        sprintNum=0
+        if sprintid.to_s != ""
+            sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
+            sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
+        end
+        finished_date=nil
+        if status=="Done"
+            finished_date=DateTime.parse(item["updated"],'%Q')
+        end
+
+        # userstory=nil
+        # get userstory link
+        # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
+        linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
+        # puts linkuserstoryid
+        # puts userstorylink[linkuserstoryid]
+        # exit
+        newtask={"attachments": [],
+            "tags": [],
+            "user_story": userstorylink[linkuserstoryid], # fun part....
+            "ref": backlogorder,
+            "watchers": [],
+            "modified_date": DateTime.parse(item["updated"],'%Q'),
+            "subject": item['summary'],
+            "status": status,
+            "is_iocaine": false,
+            "taskboard_order": backlogorder,
+            "assigned_to": nil,
+            "us_order": backlogorder,
+            "milestone": sprintdetails,
+            "owner": "",
+            "is_blocked": false,
+            "history": [],
+            "blocked_note": "",
+            "finished_date": finished_date,
+            "created_date": DateTime.parse(item["created"],'%Q'),
+            "version": backlogorder,
+            "custom_attributes_values": {},
+            "external_reference": nil,
+            "description": item['description'].to_s}
+        taskslist.push(newtask)
+    end 
+    backlogorder+=1
     #if subtask then....
+
+# <Issue id="10387" key="TJI-5" number="5" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10000" summary="generate project on jira" description="sub task description" priority="3" status="3" created="2016-10-31 08:21:43.651" updated="2016-10-31 09:05:34.24" votes="0" watches="1" workflowId="10387"/>
     
 end
 
@@ -575,7 +594,7 @@ tempjson=
 "is_featured": false,
 "points": [{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}],
 "anon_permissions": ["view_project", "view_epics", "view_tasks", "view_wiki_pages", "view_wiki_links", "view_us", "view_milestones", "view_issues"],
-"tasks": tasks,
+"tasks": taskslist,
 "total_story_points": total_story_points, # can be nil, place value to see graph
 "default_severity": "Normal",
 "us_statuses": [{"wip_limit": nil, "is_closed": false, "slug": "new", "order": 1, "is_archived": false, "name": "New", "color": "#999999"}, {"wip_limit": nil, "is_closed": false, "slug": "ready", "order": 2, "is_archived": false, "name": "Ready", "color": "#ff8a84"}, {"wip_limit": nil, "is_closed": false, "slug": "in-progress", "order": 3, "is_archived": false, "name": "In progress", "color": "#ff9900"}, {"wip_limit": nil, "is_closed": false, "slug": "ready-for-test", "order": 4, "is_archived": false, "name": "Ready for test", "color": "#fcc000"}, {"wip_limit": nil, "is_closed": true, "slug": "done", "order": 5, "is_archived": false, "name": "Done", "color": "#669900"}, {"wip_limit": nil, "is_closed": true, "slug": "archived", "order": 6, "is_archived": true, "name": "Archived", "color": "#5c3566"}],
