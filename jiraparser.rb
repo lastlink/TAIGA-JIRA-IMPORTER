@@ -511,26 +511,42 @@ for item in storylist
             tagslist.push(tag)
             puts tagslist
         end
-        linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
-        puts linkuserstoryid
-        exit
+        puts "epic link"
+        puts "//IssueLink[@source='"+item['id']+"']/@destination"
+        linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
+        puts linkuserstoryids
+        related_user_stories=[]
+        for userstory in linkuserstoryids
+            newlinkeduserstory={
+                "user_story": userstorylink[userstory.value],
+                "order": backlogorder
+                }
+            related_user_stories.push(newlinkeduserstory)    
+        end
+        puts related_user_stories
+        # [
+            #     {
+            #     "user_story": 2,
+            #     "order": backlogorder
+            #     },
+            #     {
+            #     "user_story": 1,
+            #     "order": backlogorder
+            #     }
+            # ]
+    #     <CustomFieldValue id="10502" issue="10392" customfield="10002" stringvalue="10000"/>
+    # <CustomFieldValue id="10503" issue="10392" customfield="10003" stringvalue="Jira Epic"/>
+    # <CustomFieldValue id="10504" issue="10392" customfield="10004" stringvalue="ghx-label-4"/>
+    # <CustomField id="10001" customfieldtypekey="com.pyxis.greenhopper.jira:gh-epic-link" customfieldsearcherkey="com.pyxis.greenhopper.jira:gh-epic-link-searcher" name="Epic Link" description="Choose an epic to assign this issue to."/>
+        # exit
         epic={
             "attachments": [],
-            "assigned_to": null,
+            "assigned_to": nil,
             "version": backlogorder,
             "tags": tagslist,
             "client_requirement": false,
             "description": item['description'].to_s,
-            "related_user_stories": [
-                {
-                "user_story": 2,
-                "order": backlogorder
-                },
-                {
-                "user_story": 1,
-                "order": backlogorder
-                }
-            ],
+            "related_user_stories": related_user_stories,
             "owner": "",
             "epics_order": backlogorder,
             "ref": backlogorder,
@@ -546,7 +562,7 @@ for item in storylist
             "modified_date": DateTime.parse(item["updated"],'%Q'),
             "team_requirement": false
             }
-        # epiclist.push(epic)
+        epiclist.push(epic)
     end 
     backlogorder+=1
     #if subtask then....
