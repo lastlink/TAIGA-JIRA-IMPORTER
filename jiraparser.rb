@@ -205,6 +205,8 @@ puts "date created"
 # checkpoint date
 # DateTime.strptime(startdate.to_s,'%Q')
 
+backlogorder=0
+
 dateprojectcreated="2016-10-31T14:13:34+0000"
 dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
 # <AuditLog id="10497" remoteAddress="10.24.30.18" created="2016-10-31 08:14:09.286" authorKey="theefunk" summary="Project created" category="projects" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER" authorType="1" eventSourceName="" longDescription="" searchField="theefunk taylor funk 10.24.30.18 project created projects taiga jira importer internal directory tji unassigned"/>
@@ -438,6 +440,8 @@ for item in storylist
             totaluserpoints+=points.to_f
             if points=="0.5"
                 points="1/2"
+            else
+                points=points.to_i.to_s
             end
         end
         puts "points are:" + points
@@ -469,9 +473,10 @@ for item in storylist
         else
             status="New"
         end
-
-        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": 0, "milestone": sprintdetails, "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, 
+        
+        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": nil, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
         "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
+        backlogorder+=1
         user_stories.push(newstory)
         
     end #2016-10-31 08:21:43.651"
@@ -620,12 +625,12 @@ File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do 
 end
 
 
-File.open("taigaproject1a.json","w") do |f|
-  File.open("taigaproject.1.json") do |o|
-    openjson=JSON(o.read)
-    f.write(JSON.pretty_generate(openjson))
-  end
-end
+# File.open("taigaproject1a.json","w") do |f|
+#   File.open("taigaproject.1.json") do |o|
+#     openjson=JSON(o.read)
+#     f.write(JSON.pretty_generate(openjson))
+#   end
+# end
 
 # File.open("taigaoutput.json","w") do |f|
 #   f.write(tempjson.to_json)
