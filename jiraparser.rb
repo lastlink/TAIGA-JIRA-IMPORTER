@@ -449,17 +449,7 @@ for item in storylist
         else
             status="New"
         end
-        puts "custom fields:"
-        points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
-        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
-        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
-        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
-        sprintdetails=""
-        sprintNum=0
-        if sprintid.to_s != ""
-            sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
-            sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
-        end
+        
         finished_date=nil
         if status=="Done"
             finished_date=DateTime.parse(item["updated"],'%Q')
@@ -469,8 +459,22 @@ for item in storylist
         # get userstory link
         # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
+        sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+linkuserstoryid+"']/@stringvalue") # 10000
+        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
+        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
+        sprintdetails=""
+        sprintNum=0
+        if sprintid.to_s != ""
+            sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
+            sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
+        end
+
+
+
+
         # puts linkuserstoryid
         # puts userstorylink[linkuserstoryid]
+        # puts sprintdetails
         # exit
         newtask={"attachments": [],
             "tags": [],
