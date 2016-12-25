@@ -101,6 +101,8 @@ jira_active = "activeobjects.xml"
 #list project names
 puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
+
+
 # //Project/@name
 # # type: Nokogiri::XML::NodeSet
 # for item in projectlist
@@ -192,11 +194,22 @@ puts "selected project: "+projectname
 # give user option to add for each project
 # taiga email, username[0], userid
 username=["","",nil]
-
+puts "date created"
+# tempdate= @doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created") #@project='"+ currentproject[0]['id']+"']"")
+# puts tempdate
+# # candy= DateTime.now
+# # puts candy
+# puts DateTime.parse(tempdate.to_s,'%Q')
+# exit
+# checkpoint date
+# DateTime.strptime(startdate.to_s,'%Q')
+dateprojectcreated="2016-10-31T14:13:34+0000"
+dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
+# <AuditLog id="10497" remoteAddress="10.24.30.18" created="2016-10-31 08:14:09.286" authorKey="theefunk" summary="Project created" category="projects" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER" authorType="1" eventSourceName="" longDescription="" searchField="theefunk taylor funk 10.24.30.18 project created projects taiga jira importer internal directory tji unassigned"/>
 # epics rather confusing since jira has multiple epics in audit log
 epiclist=
 [
-{"attachments": [], "assigned_to": nil, "version": 1, "tags": [], "client_requirement": false, "description": "test epic", "related_user_stories": [{"user_story": 2, "order": 1477950018264}, {"user_story": 1, "order": 1477950012880}], "owner": "", "epics_order": 1477948242204, "ref": 10, "watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"blocked_note_html": "", "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "epics_order": 1477948242204, "owner": 164863, "client_requirement": false, "ref": 10, "is_blocked": false, "status": 654412, "description_html": "<p>test epic</p>", "subject": "Jira Epic", "team_requirement": false, "color": "#d3d7cf", "attachments": [], "description": "test epic"}, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:10:42+0000", "is_hidden": false}], "blocked_note": "", "custom_attributes_values": {}, "created_date": "2016-10-31T21:10:42+0000", "subject": "Jira Epic", "status": "New", "is_blocked": false, "color": "#d3d7cf", "modified_date": "2016-10-31T21:10:42+0000", "team_requirement": false}]
+{"attachments": [], "assigned_to": nil, "version": 1, "tags": [], "client_requirement": false, "description": "test epic", "related_user_stories": [{"user_story": 2, "order": 1477950018264}, {"user_story": 1, "order": 1477950012880}], "owner": "", "epics_order": 1477948242204, "ref": 10, "watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"blocked_note_html": "", "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "epics_order": 1477948242204, "owner": 164863, "client_requirement": false, "ref": 10, "is_blocked": false, "status": 654412, "description_html": "<p>test epic</p>", "subject": "Jira Epic", "team_requirement": false, "color": "#d3d7cf", "attachments": [], "description": "test epic"}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": "2016-10-31T21:10:42+0000", "is_hidden": false}], "blocked_note": "", "custom_attributes_values": {}, "created_date": "2016-10-31T21:10:42+0000", "subject": "Jira Epic", "status": "New", "is_blocked": false, "color": "#d3d7cf", "modified_date": "2016-10-31T21:10:42+0000", "team_requirement": false}]
 
 #ignore epics for now, pull ids from custom list
 epiclist=[] 
@@ -206,7 +219,7 @@ wikipages=[{"watchers": [], "history": [{"comment": "", "delete_comment_user": [
 
 # do issues
 issues=[
-{"votes": [], "created_date": "2016-10-31T21:21:16+0000", "type": "Bug", "ref": 11, "watchers": [], "custom_attributes_values": {}, "subject": "taiga issue test", "status": "New", "severity": "Minor", "assigned_to": nil, "modified_date": "2016-10-31T21:32:33+0000", "milestone": nil, "owner": username[0], "is_blocked": false, "priority": "Low", "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"severity": 795218, "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "milestone": nil, "owner": 164863, "blocked_note_html": "", "ref": 11, "is_blocked": false, "status": 1116113, "priority": 478781, "description_html": "", "subject": "taiga issue test", "type": 481276, "attachments": [], "description": ""}, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:21:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"severity": {"795217": "Minor", "795218": "Normal"}}, "diff": {"severity": [795218, 795217]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"priority": {"478780": "Low", "478781": "Normal"}}, "diff": {"priority": [478781, 478780]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:33+0000", "is_hidden": false}], "blocked_note": "", "finished_date": nil, "tags": [], "version": 3, "attachments": [], "external_reference": nil, "description": ""}]
+{"votes": [], "created_date": "2016-10-31T21:21:16+0000", "type": "Bug", "ref": 11, "watchers": [], "custom_attributes_values": {}, "subject": "taiga issue test", "status": "New", "severity": "Minor", "assigned_to": nil, "modified_date": "2016-10-31T21:32:33+0000", "milestone": nil, "owner": username[0], "is_blocked": false, "priority": "Low", "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"severity": 795218, "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "milestone": nil, "owner": 164863, "blocked_note_html": "", "ref": 11, "is_blocked": false, "status": 1116113, "priority": 478781, "description_html": "", "subject": "taiga issue test", "type": 481276, "attachments": [], "description": ""}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": "2016-10-31T21:21:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"severity": {"795217": "Minor", "795218": "Normal"}}, "diff": {"severity": [795218, 795217]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"priority": {"478780": "Low", "478781": "Normal"}}, "diff": {"priority": [478781, 478780]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": "2016-10-31T21:32:33+0000", "is_hidden": false}], "blocked_note": "", "finished_date": nil, "tags": [], "version": 3, "attachments": [], "external_reference": nil, "description": ""}]
 issues=[]
 
 #default setup
@@ -223,7 +236,8 @@ memberships=[{"user_order": 1477923215395, "role": "Product Owner", "invited_by"
 #only do top if user email provided
 memberships=[]
 
-description="build a parser to convert jira xml to taiga and taiga json to jira xml."
+description=currentproject[0]['description']
+# "build a parser to convert jira xml to taiga and taiga json to jira xml."
 #in herit from project
 tags_colors=[["jira", nil], ["xml", nil]]
 
@@ -341,9 +355,16 @@ puts "get sprints"
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
 
 end_date=DateTime.now
+puts end_date
+# exit
 milestones=[]
 puts "each sprint"
 # need to create a sprint list to keep track of task order
+milestoneorder=1
+
+
+milestonelistorder={}
+milestonelistorder["empty"]=0
 for sprint in sprintlist
     # puts sprint
     # puts sprint.search('boolean')[0]
@@ -363,9 +384,16 @@ for sprint in sprintlist
     # puts sprint.search('string')[1]
     # puts sprint.search('string')[0]
     # end_date.strftime("%Y-%m-%d")
+    sprintname= generateSlug(removeTag(sprint.search('string')[1],"string"))
     # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
-    newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": generateSlug(removeTag(sprint.search('string')[1],"string")), "order": 1, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": startdate.to_s}
+    newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": sprintname, "order": milestoneorder, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": startdate.to_s}
     # puts newmilestone.to_s
+    puts "sprint name:"
+    puts sprintname
+    milestonelistorder[sprintname]=0
+    # milestoneobject = {"name": sprintname, "order": 0}
+    # milestonelistorder.push(milestoneobject)
+    milestoneorder+=1
     milestones.push(newmilestone)
 end
 # exit
@@ -383,12 +411,26 @@ for item in storylist
         puts "custom fields:"
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue")
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue")
+        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
         puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
-        sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
-        puts removeTag(sprintdetails.search('string')[1],"string")
+        sprintdetails=""
+        sprintNum=0
+        if sprintid.to_s != ""
+            sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
+            sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
+
+            puts generateSlug(sprintdetails)
+            puts "items in sprint"
+            sprintNum= milestonelistorder[generateSlug(sprintdetails)]
+            milestonelistorder[generateSlug(sprintdetails).to_s]+=1
+        else
+            sprintNum=milestonelistorder["empty"]
+            milestonelistorder["empty"]+=1
+        end
+        puts sprintNum
         # removeTag(sprint.search('boolean')[0],"boolean")
-        puts "end sprint details"
-        exit
+        # puts "end sprint details"
+        # exit
         # sprints/milestones
     #     <CustomFieldValue id="10495" issue="10383" customfield="10000" stringvalue="47"/>
     # <CustomFieldValue id="10497" issue="10384" customfield="10000" stringvalue="47"/>
@@ -399,11 +441,12 @@ for item in storylist
         else
             points=points[0].to_s
         end
-        puts "points are:" +points
+        puts "points are:" + points
         # next are dates, orders and comments
         # maybe issues next
-        newstory={"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": item["updated"], "backlog_order": 0, "milestone": removeTag(sprintdetails.search('string')[1],"string"), "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": removeTag(sprintdetails.search('string')[1],"string")}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}], "blocked_note": "", "created_date": item["created"], "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
+        newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": item["updated"], "backlog_order": 0, "milestone": sprintdetails, "kanban_order": 1477944450673, "owner": username[0], "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {sprintid: removeTag(sprintdetails,"string")}}, "diff": {"milestone": [nil, sprintid], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": item["created"], "is_hidden": false}], "blocked_note": "", "created_date": item["created"], "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         user_stories.push(newstory)
+        
     end #2016-10-31 08:21:43.651"
         #2016-10-31T20:07:30+0000
     #if subtask then....
@@ -480,7 +523,7 @@ tempjson=
 "default_priority": "Normal",
 "total_fans_last_year": 0,
 "wiki_links": [],
-"created_date": "2016-10-31T14:13:34+0000",
+"created_date": dateprojectcreated, # "2016-10-31T14:13:34+0000",
 "creation_template": "scrum",
 "default_issue_status": "New",
 "is_epics_activated": true,
@@ -537,11 +580,11 @@ tempjson=
 # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 # print tempjson
 # print JSON.pretty_generate(tempjson) #.to_json
-
-# File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
-# #   f.write(tempjson.to_json)
-#   f.puts JSON.pretty_generate(tempjson)
-# end
+puts "end parser"
+puts currentproject[0]['name'].downcase.tr!(" ", "-").to_s
+File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
+  f.puts JSON.pretty_generate(tempjson)
+end
 
 # File.open("taigaoutput.json","w") do |f|
 #   f.write(tempjson.to_json)
