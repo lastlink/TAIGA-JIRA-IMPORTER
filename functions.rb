@@ -101,7 +101,14 @@ def getBoardId(id,jira_entities,jira_active)
     @activeObjectstemp=Nokogiri::XML(File.open(jira_active))
     @activeObjectstemp.remove_namespaces!
     searchrequestid= @doctemp.xpath("//SharePermissions[@param1='" + id.to_s + "']/@entityId")[0]
+    # puts searchrequestid
     sprintboardname= @doctemp.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
+    # sometimes there are more than one board that appears, if so remove 3rd word or number e.g. TJI board 2 = 'TJI board'
+    sprintboardArray=sprintboardname.split(" ")
+    if sprintboardArray.size>2
+      sprintboardname=sprintboardArray[0]+" "+sprintboardArray[1]
+    end
+    # puts sprintboardname
     #this is hardcoded may need to be changed if it changes for each jira database
     sprintobject = @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboardname+"']")
     sprintobject=removeInteger(sprintobject[0].search('integer')[0])
