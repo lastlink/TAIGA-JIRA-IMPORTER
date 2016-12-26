@@ -90,24 +90,30 @@ epiclist=[]
 
 
 # default wiki pages giving credit to self, really these could only come from confluence since jira doesn't have a wiki'
-wikipages=[{
-      "watchers": [
+wikipages=[
+{"attachments": [], "history": [], "created_date": "2016-11-11T08:05:30+0000", "owner": username[0], "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "watchers": [], "last_modifier": username[0], "modified_date": "2016-11-11T08:07:48+0000", "slug": "credits", "version": 3},
+{"attachments": [], "history": [], "created_date": "2016-10-31T21:03:37+0000", "owner": username[0], "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.", "watchers": [], "last_modifier": username[0], "modified_date": "2016-10-31T21:03:37+0000", "slug": "home", "version": 1}]
 
-      ],
-      "history": [
+wiki_links= [{"order": 1478851530729, "title": "CREDITS", "href": "credits"}]
+
+# [{
+#       "watchers": [
+
+#       ],
+#       "history": [
         
-      ],
-      "last_modifier": "",
-      "created_date": "2016-10-31T21:03:37+0000",
-      "slug": "home",
-      "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.",
-      "version": 1,
-      "modified_date": "2016-10-31T21:03:37+0000",
-      "owner": "",
-      "attachments": [
+#       ],
+#       "last_modifier": "",
+#       "created_date": "2016-10-31T21:03:37+0000",
+#       "slug": "home",
+#       "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.",
+#       "version": 1,
+#       "modified_date": "2016-10-31T21:03:37+0000",
+#       "owner": "",
+#       "attachments": [
 
-      ]
-    },{"watchers": [], "history": [], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
+#       ]
+#     },{"watchers": [], "history": [], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
 
 issueslist=[]
 #default points setup, note the .5 is = to 1/2
@@ -578,7 +584,7 @@ tempjson=
 "issuecustomattributes": [],
 "default_priority": "Normal",
 "total_fans_last_year": 0,
-"wiki_links": [],
+"wiki_links": wiki_links,
 "created_date": dateprojectcreated, # datetime format e.g. "2016-10-31T14:13:34+0000",
 "creation_template": "scrum",
 "default_issue_status": "New",
