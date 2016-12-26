@@ -58,6 +58,7 @@
 ####Not Supported:
 * [ ] Logos saved in some string 64 format
 * [x] History ignored (could be done, but just letting taiga auto generated everything as it's imported)
+* [ ] sprint story board name
 
 ####Supported:
 * [x] Export Project names
