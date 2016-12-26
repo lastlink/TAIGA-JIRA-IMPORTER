@@ -7,7 +7,7 @@ require 'date'
 # load ruby functions used in project
 load 'functions.rb'
 
-
+puts "Starting jira to taiga json parser:"
 
 
 #paths to the 2 jira xml databases
@@ -60,7 +60,6 @@ projectlist= @doc.xpath("//Project/@name")
 #select project or do all projects w/ 4 loop
 
 projectname="TAIGA JIRA IMPORTER"
-# puts  "project info: id:"
 # get specific project
 currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
 
@@ -179,7 +178,8 @@ milestoneorder=1 # order in which milestone is placed
 milestonelistorder={}
 milestonelistorder["empty"]=0 # empty sprint list for tasks that don't have a sprint
 for sprint in sprintlist
-    if  removeTag(sprint.search('boolean')[1],"boolean") == "true" then
+    # use sprints default dates, other wise go off by 2 weeks to set default dates for taiga sprints
+    if removeTag(sprint.search('boolean')[1],"boolean") == "true" then
         startdate=removeInteger(sprint.search('integer')[5])
         end_date= removeInteger(sprint.search('integer')[1])
         startdate = DateTime.strptime(startdate.to_s,'%Q')
@@ -187,27 +187,22 @@ for sprint in sprintlist
     else
         startdate=end_date.next_day(1)   # moveDay(end_date)
         end_date=startdate.next_day(14) # move2Weeks(start_date)
-        # puts startdate.to_s + ": " + end_date.to_s
     end
     sprintname= generateSlug(removeTag(sprint.search('string')[1],"string"))
-    # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
     newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": sprintname, "order": milestoneorder, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": DateTime.parse(startdate.to_s,'%Q')}
-    # puts newmilestone.to_s
-    puts "sprint name:"
-    puts sprintname
+    # add sprint to sprint order list
     milestonelistorder[sprintname]=0
-    # milestoneobject = {"name": sprintname, "order": 0}
-    # milestonelistorder.push(milestoneobject)
     milestoneorder+=1
+    # add sprint to milestones
     milestones.push(newmilestone)
     total_activity+=1
 end
+# right now float, this get's changed to an integer after finishing
 totaluserpoints=0.0
 
 #get user stories use .push to add to array
 storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
-# <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
-# puts "story list type" +storylist.class.name
+# this is used to link subtasks to the user story
 userstorylink={}
 
 # this pulls out all issues which is included but not limited to sub tasks, user stories epics, bugs
@@ -229,27 +224,26 @@ for item in storylist
         if status=="Done"
             finished_date=DateTime.parse(item["updated"],'%Q')
         end
+    tagslist=[]
+    # generate "tags list"
+    for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+        tagslist.push(tag)
+    end
     if item['type']==issuelist["Story"]['id'] or item['type']==issuelist["Task"]['id']
-        puts "custom fields:"
+        # "custom fields:"
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
-        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
-        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
         sprintdetails=""
         sprintNum=0
         if sprintid.to_s != ""
             sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
             sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
-
-            puts generateSlug(sprintdetails)
-            puts "items in sprint"
             sprintNum= milestonelistorder[generateSlug(sprintdetails)]
             milestonelistorder[generateSlug(sprintdetails).to_s]+=1
         else
             sprintNum=milestonelistorder["empty"]
             milestonelistorder["empty"]+=1
         end
-        puts sprintNum
         if points.size==0
             points="?"
         else
@@ -261,21 +255,10 @@ for item in storylist
                 points=points.to_i.to_s
             end
         end
-        puts "points are:" + points
-        tagslist=[]
-        # puts "tags list"
-        # puts item['id']
-        # <Label id="10002" issue="10387" label="jira"/>
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
 
         newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": tagslist, "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": finished_date, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
         "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         userstorylink[item['id']]=backlogorder
-        puts userstorylink[item['id']].to_s + " " + item['id']
-        
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
         # need to ignore subtasks of bugs and epics
@@ -293,12 +276,7 @@ for item in storylist
             sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
             sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
         end
-        # get tags from labels
-        tagslist=[]
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
+        
         newtask={"attachments": [],
             "tags": tagslist,
             "user_story": userstorylink[linkuserstoryid], # fun part....
@@ -324,39 +302,27 @@ for item in storylist
             "description": item['description'].to_s}
         taskslist.push(newtask)
     elsif item['type']==issuelist["Epic"]['id']
-        # epiclist.push(candy)
-
-        tagslist=[]
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
-        puts "epic link"
-        puts "//IssueLink[@source='"+item['id']+"']/@destination"
+        # "epic link"
         linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
-        puts linkuserstoryids
         related_user_stories=[]
 
-        # should check to verify that it's a task or user story'
         for userstory in linkuserstoryids
-            newlinkeduserstory={
+            issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+userstory.value+"']/@type").to_s
+        #should skip this if the linked task is not a story or task
+        # e.g. epics and bugs are ignored
+            if issuetype==issuelist["Task"]['id'] or issuetype==issuelist["Story"]['id']
+                newlinkeduserstory={
                 "user_story": userstorylink[userstory.value],
                 "order": backlogorder
                 }
-            related_user_stories.push(newlinkeduserstory)    
+                related_user_stories.push(newlinkeduserstory)
+            end
         end
-        puts related_user_stories
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
+        # could not add any epics that have nothing linked to them
+        # if related_user_stories.size==0
+        #     break
+        # end
+
         epic={
             "attachments": [],
             "assigned_to": nil,
@@ -382,7 +348,7 @@ for item in storylist
             }
         epiclist.push(epic)
     elsif item['type']==issuelist["Bug"]['id']
-        # issues support priorities others do not
+        # bug issues support priorities others do not
         priority=@doc.xpath("//Priority[@id='"+item["priority"]+"']/@name").to_s
         case priority
         when "High","Highest"
@@ -413,7 +379,7 @@ for item in storylist
             "history": [],
             "blocked_note": "",
             "finished_date": finished_date,
-            "tags": [],
+            "tags": tagslist,
             "version": backlogorder,
             "attachments": [],
             "external_reference": nil,
@@ -421,7 +387,6 @@ for item in storylist
             }
         issueslist.push(issue)
         # if any sub tasks these will be ignored, although they could be added into the description
-        # issuelist
     else
         puts "this type is not included in the import: "+item['type']
     end 
@@ -515,7 +480,7 @@ tempjson=
 # print tempjson
 # print JSON.pretty_generate(tempjson) #.to_json
 puts "end parser"
-puts currentproject[0]['name'].downcase.tr!(" ", "-").to_s
+puts "saving project to:"+currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
   f.write(JSON.pretty_generate(tempjson))
 #   f.write(tempjson.to_json)
