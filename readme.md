@@ -46,6 +46,8 @@
 * Sprints have stories successfully linked
 * Epics have tasks successfully linked
 * Tags/Labels are supported
+* Default for projects converts are to be not private since taiga only allows one private per free account
+* Kanban also disabled by default may enable if desired
 
 ###Jira xml notes
 * project id is 24
@@ -56,6 +58,7 @@
 ####Not Supported:
 * [ ] Logos saved in some string 64 format
 * [x] History ignored (could be done, but just letting taiga auto generated everything as it's imported)
+* [ ] sprint story board name
 
 ####Supported:
 * [x] Export Project names
