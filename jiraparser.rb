@@ -200,10 +200,8 @@ epiclist=[]
 wikipages=[{"watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"content": "", "content_html": "", "attachments": [], "owner": 164863, "slug": "credits"}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:05:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["", "This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["", "<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:06+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>", "<p>This project has been converted from JIRA using <a href=\"https://github.com/lastlink\" target=\"_blank\" title=\"lastlink\">lastlink</a>'s parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:49+0000", "is_hidden": false}], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
 
 # do issues
-issues=[
-{"votes": [], "created_date": "2016-10-31T21:21:16+0000", "type": "Bug", "ref": 11, "watchers": [], "custom_attributes_values": {}, "subject": "taiga issue test", "status": "New", "severity": "Minor", "assigned_to": nil, "modified_date": "2016-10-31T21:32:33+0000", "milestone": nil, "owner": username[0], "is_blocked": false, "priority": "Low", "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"severity": 795218, "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "milestone": nil, "owner": 164863, "blocked_note_html": "", "ref": 11, "is_blocked": false, "status": 1116113, "priority": 478781, "description_html": "", "subject": "taiga issue test", "type": 481276, "attachments": [], "description": ""}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:21:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"severity": {"795217": "Minor", "795218": "Normal"}}, "diff": {"severity": [795218, 795217]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"priority": {"478780": "Low", "478781": "Normal"}}, "diff": {"priority": [478781, 478780]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:32:33+0000", "is_hidden": false}], "blocked_note": "", "finished_date": nil, "tags": [], "version": 3, "attachments": [], "external_reference": nil, "description": ""}]
-issues=[]
 
+issueslist=[]
 #default setup
 points=[{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}]
 
@@ -357,8 +355,10 @@ storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
 userstorylink={}
 
 # this pulls out all issues which is included but not limited to sub tasks, user stories epics, bugs
+# tasks and user stories are treated as users stories
+# bugs are treated as issues & any sub tasks of bugs are ignored
 for item in storylist
-    if item['type']==issuelist["Story"]['id']
+    if item['type']==issuelist["Story"]['id'] or item['type']==issuelist["Task"]['id']
         # puts item 
         #place summary in subject line
         #generate user story list
@@ -445,6 +445,7 @@ for item in storylist
         
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
+        # need to ignore subtasks of bugs and epics
         status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
         case status
         when "To Do"
@@ -464,6 +465,13 @@ for item in storylist
         # get userstory link
         # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
+        issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+linkuserstoryid+"']/@type").to_s
+        puts "issue type break"
+        #should skip this if the linked task is not a story or task
+        # e.g. epics and bugs are ignored
+        if issuetype!=issuelist["Task"]['id'] and issuetype!=issuelist["Story"]['id']
+            break
+        end
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+linkuserstoryid+"']/@stringvalue") # 10000
         puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
         puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
@@ -516,6 +524,8 @@ for item in storylist
         linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
         puts linkuserstoryids
         related_user_stories=[]
+
+        # should check to verify that it's a task or user story'
         for userstory in linkuserstoryids
             newlinkeduserstory={
                 "user_story": userstorylink[userstory.value],
@@ -524,21 +534,17 @@ for item in storylist
             related_user_stories.push(newlinkeduserstory)    
         end
         puts related_user_stories
-        # [
-            #     {
-            #     "user_story": 2,
-            #     "order": backlogorder
-            #     },
-            #     {
-            #     "user_story": 1,
-            #     "order": backlogorder
-            #     }
-            # ]
-    #     <CustomFieldValue id="10502" issue="10392" customfield="10002" stringvalue="10000"/>
-    # <CustomFieldValue id="10503" issue="10392" customfield="10003" stringvalue="Jira Epic"/>
-    # <CustomFieldValue id="10504" issue="10392" customfield="10004" stringvalue="ghx-label-4"/>
-    # <CustomField id="10001" customfieldtypekey="com.pyxis.greenhopper.jira:gh-epic-link" customfieldsearcherkey="com.pyxis.greenhopper.jira:gh-epic-link-searcher" name="Epic Link" description="Choose an epic to assign this issue to."/>
-        # exit
+        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
         epic={
             "attachments": [],
             "assigned_to": nil,
@@ -556,17 +562,86 @@ for item in storylist
             "custom_attributes_values": {},
             "created_date": DateTime.parse(item["created"],'%Q'),
             "subject": item['summary'],
-            "status": "New",
+            "status": status,
             "is_blocked": false,
             "color": "#d3d7cf",
             "modified_date": DateTime.parse(item["updated"],'%Q'),
             "team_requirement": false
             }
         epiclist.push(epic)
+    elsif item['type']==issuelist["Bug"]['id']
+        # issues support priorities others do not
+        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
+        finished_date=nil
+        if status=="Done"
+            finished_date=DateTime.parse(item["updated"],'%Q')
+        end
+        priority=@doc.xpath("//Priority[@id='"+item["Priority"]+"']/@name").to_s
+        case priority
+        when "High","Highest"
+            priority="High"
+        when "Medium"
+            priority="Normal"
+        when "Low","Lowest"
+            priority="Low"
+        else
+            priority="Low"
+        end
+# <Priority id="1" sequence="1" name="Highest" description="This problem will block progress." iconurl="/images/icons/priorities/highest.png" statusColor="#d04437"/>
+#     <Priority id="2" sequence="2" name="High" description="Serious problem that could block progress." iconurl="/images/icons/priorities/high.svg" statusColor="#ff6600"/>
+#     <Priority id="3" sequence="3" name="Medium" description="Has the potential to affect progress." iconurl="/images/icons/priorities/medium.svg" statusColor="#ffff00"/>
+#     <Priority id="4" sequence="4" name="Low" description="Minor problem or easily worked around." iconurl="/images/icons/priorities/low.svg" statusColor="#00cc33"/>
+#     <Priority id="5" sequence="5" name="Lowest" description="Trivial problem with little or no impact on progress." iconurl="/images/icons/priorities/lowest.svg" statusColor="#0000ff"/>
+
+
+
+        issue={
+            "votes": [],
+            "created_date": DateTime.parse(item["created"],'%Q'),
+            "type": "Bug", #hard coded
+            "ref": backlogorder,
+            "watchers": [],
+            "custom_attributes_values": {},
+            "subject": item['summary'],
+            "status": status,
+            "severity": "Minor", # default value
+            "assigned_to": nil,
+            "modified_date": DateTime.parse(item["updated"],'%Q'),
+            "milestone": nil,
+            "owner": "",
+            "is_blocked": false,
+            "priority": priority,
+            "history": [],
+            "blocked_note": "",
+            "finished_date": finished_date,
+            "tags": [],
+            "version": backlogorder,
+            "attachments": [],
+            "external_reference": null,
+            "description": item['description'].to_s
+            }
+        issuelist.push(issue)
+        # if any sub tasks these will be ignored, although they could be added into the description
+        # issuelist
+    else
+        puts "this type is not included in the import: "+item['type']
     end 
     backlogorder+=1
     #if subtask then....
 
+# issues=[
+# {"votes": [], "created_date": "2016-10-31T21:21:16+0000", "type": "Bug", "ref": 11, "watchers": [], "custom_attributes_values": {}, "subject": "taiga issue test", "status": "New", "severity": "Minor", "assigned_to": nil, "modified_date": "2016-10-31T21:32:33+0000", "milestone": nil, "owner": username[0], "is_blocked": false, "priority": "Low", "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"severity": 795218, "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "milestone": nil, "owner": 164863, "blocked_note_html": "", "ref": 11, "is_blocked": false, "status": 1116113, "priority": 478781, "description_html": "", "subject": "taiga issue test", "type": 481276, "attachments": [], "description": ""}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:21:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"severity": {"795217": "Minor", "795218": "Normal"}}, "diff": {"severity": [795218, 795217]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"priority": {"478780": "Low", "478781": "Normal"}}, "diff": {"priority": [478781, 478780]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:32:33+0000", "is_hidden": false}], "blocked_note": "", "finished_date": nil, "tags": [], "version": 3, "attachments": [], "external_reference": nil, "description": ""}]
+# issues=[]
 # <Issue id="10387" key="TJI-5" number="5" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10000" summary="generate project on jira" description="sub task description" priority="3" status="3" created="2016-10-31 08:21:43.651" updated="2016-10-31 09:05:34.24" votes="0" watches="1" workflowId="10387"/>
     
 end
@@ -656,7 +731,7 @@ tempjson=
 "wiki_pages": wikipages,
 "userstorycustomattributes": [],
 "issues_csv_uuid": nil,
-"issues": issues,
+"issues": issueslist,
 "looking_for_people_note": "",
 "is_featured": false,
 "points": [{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}],
