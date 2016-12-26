@@ -13,6 +13,52 @@ def only_valid_chars(text)
   
   return xmltext
 end
+
+def is_num(str)
+  !!Integer(str)
+rescue ArgumentError, TypeError
+  false
+end
+
+# will need to try this 2x w/ a board of size 3 and of size 4
+def convertToBoard(text)
+   response=text
+
+   responseArray=response.split(" ")
+  #  responseArray = Capture.find(:all)
+   responseArray.delete('and')
+  #  responseArray.reject! { |item| item.text =~ 'and' }
+   puts response.size
+   puts responseArray.size
+   if responseArray.size==1
+      if response.size<=4
+        response=response.upcase
+      else 
+        puts "shortening response"
+        response=response[0..3].upcase
+      end
+   elsif responseArray.size==2
+     if not is_num(responseArray[1])
+        if responseArray[0].size<=3
+            response=responseArray[0][0..responseArray[0].size].upcase + responseArray[1][0].upcase
+        else
+            response=responseArray[0][0..2].upcase + responseArray[1][0].upcase
+        end
+     else
+       if responseArray[1].size>=2
+        response=responseArray[0][0..1].upcase + responseArray[1][responseArray[1].size-3..responseArray[1].size-1]
+       else
+         response=responseArray[0][0..1].upcase + responseArray[1][0..responseArray[1].size-1]
+       end
+     end
+   else
+     puts"size invalid"
+      response=responseArray[0][0].upcase+responseArray[1][0].upcase+responseArray[2][0].upcase
+   end
+   return response
+end
+
+
 # this generates taiga slug by making lowercase and adding dash - to spaces
 def generateSlug(text)
     text=text.to_s

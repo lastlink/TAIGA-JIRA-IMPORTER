@@ -22,52 +22,93 @@ jira_active = "jira_xml_databases/activeobjects.xml"
 
 #active objects uses namespaces & b/c I don't understand them I decided to remove them
 @activeObjects.remove_namespaces! 
-#list project names
-puts "Available Projects:"
-projectlist= @doc.xpath("//Project/@name")
-puts projectlist
-exit
 
-# //Project/@name
-# # type: Nokogiri::XML::NodeSet
+puts "Single[1] project or all[2]"
+response=gets.chomp.to_i
+until response==1 or response ==2 
+    puts "invalid response try 1 or 2"
+    response=gets.chomp.to_i
+end
+#list project names
+projectlist= @doc.xpath("//Project/@name")
+if response==1
 # for item in projectlist
-#     puts item
+#     puts item.to_s
 # end
-# Fall216
-# Software Startup Initiative
-# Gym Counter
-# Dirt
-# Youtube Filtering
-# Dibs
-# Mobile Mentoring Application
-# Sports
-# Workout
-# Nimbus
-# Lure
-# David Vogt's Project
-# Parkor
-# Referrals and Commissions
-# Blaine Hamilton IS590R
-# Michael's Project
-# Stop Texting and Driving
-# stackDj
-# PaperGames
-# TAIGA JIRA IMPORTER
+
 
 # projectlist.xpath("/@nam").each do |node|
 #   # some instruction
 # end
 
 #select project or do all projects w/ 4 loop
+puts "Available Projects:"
+puts projectlist
+puts "Give project name to convert to taiga json:"
+projectname=gets.chomp.to_s    #"TAIGA JIRA IMPORTER"
+inprojectlist=false
+for item in projectlist
+    if projectname==item.to_s
+       inprojectlist=true
+       break
+    end
+end
+while inprojectlist==false
+    puts "INVALID project name try again"
+    projectname=gets.chomp.to_s 
+    for item in projectlist
+        if projectname==item.to_s
+        inprojectlist=true
+        break
+        end
+    end
+end
 
-projectname="TAIGA JIRA IMPORTER"
+# puts projectname
+
+
+projectname=projectname.gsub("'","&apos;")
 # get specific project
 currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
+puts currentproject[0]
 
-sprintboard="TJI board"
+# puts convertToBoard(projectname)
+# exit
+# another complex part sprint board naming, looks like if one word graps first 3 or 4 letters, no more than 3 letters
+board=" board"
+# attempt to convert if doesn't exist give user option then skip'
+sprintboard=convertToBoard(projectname)+board
+puts sprintboard
+
 sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+sprintobject=sprintobject.to_s
+puts sprintobject
+puts sprintobject.class.name
+puts sprintobject.size
+while sprintobject.size==0 and sprintboard.to_s!="0 board"
+    puts "INVALID project sprint board name \nplease manually input it or skip[0] this project"
+    sprintboard=gets.chomp.to_s 
+    # if sprintboard
+    sprintboard=sprintboard+board
+    puts sprintboard
+    sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+    sprintobject=sprintobject.to_s
+end
+# this will be for forloop
+if sprintboard=="0 board"
+    # pass
+    exit
+    # next
+end
+puts "valid sprint board name"
+
+
+exit
+
 sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 
+
+exit
 # needs to be an email on taiga
 # however leaving it blank will result in creator being replaced by the user importing the taiga json
 #initialize variables
@@ -480,7 +521,7 @@ tempjson=
 # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 # print tempjson
 # print JSON.pretty_generate(tempjson) #.to_json
-puts "end parser"
+
 puts "saving project to:"+currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
   f.write(JSON.pretty_generate(tempjson))
@@ -488,7 +529,8 @@ File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do 
 #   f.puts JSON.pretty_generate(tempjson)
 end
 
-
+end # end if response
+puts "end parser"
 # File.open("taigaproject1a.json","w") do |f|
 #   File.open("taigaproject.1.json") do |o|
 #     openjson=JSON(o.read)
