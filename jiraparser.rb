@@ -85,10 +85,10 @@ for item in projectlist
     puts sprintboard
 
     sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-    sprintobject=sprintobject.to_s
-    puts sprintobject
-    puts sprintobject.class.name
-    puts sprintobject.size
+    sprintobject=sprintobject
+    # puts sprintobject
+    # puts sprintobject.class.name
+    # puts sprintobject.size
     while sprintobject.size==0 and sprintboard.to_s!="0 board"
         puts sprintboard+ " is INVALID project sprint board name for: \n"+projectname+"\nplease manually input it or skip[0] this project"
         sprintboard=gets.chomp.to_s 
@@ -106,7 +106,7 @@ for item in projectlist
     end
     puts "valid sprint board name"
     sprintobject= removeInteger(sprintobject[0].search('integer')[0])
-    exit
+    
     # needs to be an email on taiga
     # however leaving it blank will result in creator being replaced by the user importing the taiga json
     #initialize variables
@@ -519,8 +519,9 @@ for item in projectlist
     # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
     # print tempjson
     # print JSON.pretty_generate(tempjson) #.to_json
-
+    puts currentproject[0]['name']
     puts "saving project to:"+currentproject[0]['name'].downcase.tr!(" ", "-").to_s
+    exit
     File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
     f.write(JSON.pretty_generate(tempjson))
     #   f.write(tempjson.to_json)
