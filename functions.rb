@@ -62,6 +62,8 @@ end
 # this generates taiga slug by making lowercase and adding dash - to spaces
 def generateSlug(text)
     text=text.to_s
+    text=text.gsub("-"," ")
+    text=text.split.join(" ")
     return text.downcase.gsub(" ", "-").to_s
 end
 # returns true if 1 integer passed
@@ -100,8 +102,10 @@ def getBoardId(id,jira_entities,jira_active)
     @doctemp = Nokogiri::XML(only_valid_chars(jira_entities))
     @activeObjectstemp=Nokogiri::XML(File.open(jira_active))
     @activeObjectstemp.remove_namespaces!
+    # puts id.to_s
     searchrequestid= @doctemp.xpath("//SharePermissions[@param1='" + id.to_s + "']/@entityId")[0]
     # puts searchrequestid
+     
     sprintboardname= @doctemp.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
     # sometimes there are more than one board that appears, if so remove 3rd word or number e.g. TJI board 2 = 'TJI board'
     sprintboardArray=sprintboardname.split(" ")
@@ -109,8 +113,13 @@ def getBoardId(id,jira_entities,jira_active)
       sprintboardname=sprintboardArray[0]+" "+sprintboardArray[1]
     end
     # puts sprintboardname
+    if sprintboardname.include? "GROUN"
+      sprintboardname["GROUN"]="GYMC" 
+    end
+    # puts sprintboardname
     #this is hardcoded may need to be changed if it changes for each jira database
     sprintobject = @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboardname+"']")
+    
     sprintobject=removeInteger(sprintobject[0].search('integer')[0])
     return sprintobject.to_s
 end
