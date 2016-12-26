@@ -3,240 +3,171 @@ require 'nokogiri' # provides support for xpath queries
 require 'iconv' # used for cleaning bad control characters
 require 'json' # used to export to json
 require 'date'
-# require 'active_support/core_ext'
-# require 'datetime'
-#gem install each
+#gem install each require
+# load ruby functions used in project
+load 'functions.rb'
 
-puts "Running jira xml reader."
-
-
-def only_valid_chars(text)
-  return "" unless text
-  xmltext=""
-  File.open(text) do |f|
-  #  this removes bad control characters
-  xmltext = Iconv.conv('UTF-8//IGNORE', 'UTF-8', f.read.gsub(/[\u0001-\u001A]/ , ''))
-  
-  end
-
-  xmltext.encode('UTF-8', 'UTF-8', {:invalid => :replace, :undef => :replace, :replace => ""})
-  
-  return xmltext
-end
-
-def generateSlug(text)
-    text=text.to_s
-    return text.downcase.tr!(" ", "-").to_s
-end
-
-def boolean(boolI)
-    if boolI==1 then
-        return true
-    end
-    return false
-end
-
-def removeColon(text)
-  text=text.to_s
-  text=text.gsub(":", "") 
-  return text.to_s
-end
-def removeInteger(text)
-  return 0 unless text
-  text=text.to_s
-  text=text.gsub("<integer>", "")
-  text=text.gsub("</integer>", "")
-  
-  return text.to_i
-end
-def removeTag(text,tag)
-  return 0 unless text
-  text=text.to_s
-  text=text.gsub("<"+tag+">", "")
-  text=text.gsub("</"+tag+">", "")
-  
-  return text.to_s
-end
-
-def getBoardId(id,jira_entities,jira_active)
-    @doctemp = Nokogiri::XML(only_valid_chars(jira_entities))
-    @activeObjectstemp=Nokogiri::XML(File.open(jira_active))
-    @activeObjectstemp.remove_namespaces!
-    searchrequestid= @doctemp.xpath("//SharePermissions[@param1='" + id.to_s + "']/@entityId")[0]
-    sprintboardname= @doctemp.xpath("//SearchRequest [@id='"+searchrequestid+"']/@name")[0].to_s.gsub("Filter for ","")
-    sprintobject = @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboardname+"']")
-    sprintobject=removeInteger(sprintobject[0].search('integer')[0])
-    return sprintobject.to_s
-end
+puts "Starting jira to taiga json parser:"
 
 
-
+#paths to the 2 jira xml databases
 jira_entities = "jira_xml_databases/entities.xml"
 jira_active = "jira_xml_databases/activeobjects.xml"
+#create nokogiri xpath objects
 @doc = Nokogiri::XML(only_valid_chars(jira_entities))
 @activeObjects=Nokogiri::XML(File.open(jira_active))
+
 #run this to check that whole document reads
 # puts @doc.xpath("*")
-# puts "testing new xml:"
-# xpath doesnt work w/ nokogiri activeobjects.xml
-# puts @activeObjects.xpath("//table")
-# puts @activeObjects.css('row').to_s
-@activeObjects.remove_namespaces! # need to do this to actually use
-#name spaces are confusing
-# puts @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row")
 
-# /@integer='10120'
-# data tableName="AO_60DB71_RAPIDVIEW
-# /*[name()='backup']/*[name()='data']
-#valid query
-# puts @activeobjects.xpath("/")
+#active objects uses namespaces & b/c I don't understand them I decided to remove them
+@activeObjects.remove_namespaces! 
 
-# puts @activeObjects.at('//data[@tableName="AO_60DB71_RAPIDVIEW"]/row')
-# .at('//Relationship[@Id="rId3"]')
-# puts @doc.xpath('//*')
-# @doc2 = Nokogiri::XML(@activeObjects.css('row').to_s)
-# puts @doc2
-# puts @activeObjects.xpath('//boolean')
-# puts "end testing..."
+puts "Single[1] project or all[2]"
+response=gets.chomp.to_i
+until response==1 or response ==2 
+    puts "invalid response try 1 or 2"
+    response=gets.chomp.to_i
+end
 #list project names
-puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
-
-
-# //Project/@name
-# # type: Nokogiri::XML::NodeSet
+if response==1
 # for item in projectlist
-#     puts item
+#     puts item.to_s
 # end
-# Fall216
-# Software Startup Initiative
-# Gym Counter
-# Dirt
-# Youtube Filtering
-# Dibs
-# Mobile Mentoring Application
-# Sports
-# Workout
-# Nimbus
-# Lure
-# David Vogt's Project
-# Parkor
-# Referrals and Commissions
-# Blaine Hamilton IS590R
-# Michael's Project
-# Stop Texting and Driving
-# stackDj
-# PaperGames
-# TAIGA JIRA IMPORTER
+
 
 # projectlist.xpath("/@nam").each do |node|
 #   # some instruction
 # end
 
-# gets class of object
-# puts projectlist.class.name.to_s
-# puts projectlist[0].to_s
-
-# projectlist1="sup"
-# print projectlist1
-# puts @doc.css("Project name")
-# //Project[@name]
-# @name
 #select project or do all projects w/ 4 loop
-# <Project id="10119" name="TAIGA JIRA IMPORTER" url="https://tree.taiga.io/project/last_link-taiga-jira-importer/backlog" lead="username[0]" description="build a parser to convert jira xml to taiga and taiga json to jira xml." key="TJI" counter="10" assigneetype="3" avatar="10510" originalkey="TJI" projecttype="software"/>
+puts "Available Projects:"
+puts projectlist
+puts "Give project name to convert to taiga json:"
+projectname=gets.chomp.to_s    #"TAIGA JIRA IMPORTER"
+inprojectlist=false
+for item in projectlist
+    if projectname==item.to_s
+       inprojectlist=true
+       break
+    end
+end
+while inprojectlist==false
+    puts "INVALID project name try again"
+    projectname=gets.chomp.to_s 
+    for item in projectlist
+        if projectname==item.to_s
+        inprojectlist=true
+        break
+        end
+    end
+end
 
-projectname="TAIGA JIRA IMPORTER"
-# puts  "project info: id:"
+# puts projectname
+
+
+projectname=projectname.gsub("'","&apos;")
 # get specific project
 currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
-# currentproject[0]['name']
-# use id to get other info
-puts currentproject[0]['id']#.to_i.class.name
-# [@lang='en']
-sprintboard="TJI board"
-puts "searching object xml:"
-# sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-# sprintobject= removeInteger(sprintobject[0].search('integer')[0])
-# board it
-sprintboard="TJI board"
+puts currentproject[0]
+
+# puts convertToBoard(projectname)
+# exit
+# another complex part sprint board naming, looks like if one word graps first 3 or 4 letters, no more than 3 letters
+board=" board"
+# attempt to convert if doesn't exist give user option then skip'
+sprintboard=convertToBoard(projectname)+board
+puts sprintboard
+
 sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-sprintobject= removeInteger(sprintobject[0].search('integer')[0])
+sprintobject=sprintobject.to_s
 puts sprintobject
+puts sprintobject.class.name
+puts sprintobject.size
+while sprintobject.size==0 and sprintboard.to_s!="0 board"
+    puts "INVALID project sprint board name \nplease manually input it or skip[0] this project"
+    sprintboard=gets.chomp.to_s 
+    # if sprintboard
+    sprintboard=sprintboard+board
+    puts sprintboard
+    sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+    sprintobject=sprintobject.to_s
+end
+# this will be for forloop
+if sprintboard=="0 board"
+    # pass
+    exit
+    # next
+end
+puts "valid sprint board name"
 
-puts "selected project: "+projectname
 
-# puts "epic link ids:"
-# puts @doc.xpath("//AuditItem[@objectName='"+ currentproject[0]['name']+"']/@logId")
+exit
 
-
-# <AuditItem id="10276" logId="10500" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
-#     <AuditItem id="10277" logId="10501" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
-#     <AuditItem id="10278" logId="10501" objectType="USER" objectId="username[0]" objectName="username[0]" objectParentId="1" objectParentName="JIRA Internal Directory"/>
-#     <AuditItem id="10279" logId="10502" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
-#     <AuditItem id="10280" logId="10503" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
-#     <AuditItem id="10281" logId="10504" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER"/>
+sprintobject= removeInteger(sprintobject[0].search('integer')[0])
 
 
+exit
 # needs to be an email on taiga
-#my user email taiga: 7cce31b2@opayq.com
-#initialize varialbes
+# however leaving it blank will result in creator being replaced by the user importing the taiga json
+#initialize variables
 
 # give user option to add for each project
-# taiga email, username[0], userid
-# email 0, username 1, userid2
+# taiga email 0, username 1, userid2
 username=["","",nil]
-puts "date created"
+
 # can't start at 0
 backlogorder=1
 
-dateprojectcreated="2016-10-31T14:13:34+0000"
+# taiga uses a datetime format similar to 2016-10-31T14:13:34+0000 for all it's dates
+# audid log is like history in taiga, only use it to get the creation date of the project
+# I really leave history blank for the taiga project, as users can't really be imported there is no point to importing user history from jira
 dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
-# <AuditLog id="10497" remoteAddress="10.24.30.18" created="2016-10-31 08:14:09.286" authorKey="theefunk" summary="Project created" category="projects" objectType="PROJECT" objectId="10119" objectName="TAIGA JIRA IMPORTER" authorType="1" eventSourceName="" longDescription="" searchField="theefunk taylor funk 10.24.30.18 project created projects taiga jira importer internal directory tji unassigned"/>
-# epics rather confusing since jira has multiple epics in audit log
+
+project_tags=[]
+# get any labels for jira project and add to taiga project tags
+for tag in @doc.xpath("//Label[@issue='"+currentproject[0]['id']+"']/@label")
+    project_tags.push(tag)
+end
+
 epiclist=[]
 
-
-# default wiki pages giving credit to self, really these could only come from confluence jira doesn't have a wiki'
-wikipages=[{"watchers": [], "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"content": "", "content_html": "", "attachments": [], "owner": 164863, "slug": "credits"}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:05:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["", "This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["", "<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:06+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"content": ["This project has been converted from jira using lastlink's parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\")."], "content_html": ["<p>This project has been converted from jira using lastlink's parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>", "<p>This project has been converted from JIRA using <a href=\"https://github.com/lastlink\" target=\"_blank\" title=\"lastlink\">lastlink</a>'s parser. </p>\n<p>Github <a href=\"https://github.com/lastlink/TAIGA-JIRA-IMPORTER\" target=\"_blank\" title=\"source\">source</a>.</p>"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-11-11T08:07:49+0000", "is_hidden": false}], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
-
-# do issues
+# default wiki pages giving credit to self, really these could only come from confluence since jira doesn't have a wiki'
+wikipages=[
+{"attachments": [], "history": [], "created_date": "2016-11-11T08:05:30+0000", "owner": username[0], "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "watchers": [], "last_modifier": username[0], "modified_date": "2016-11-11T08:07:48+0000", "slug": "credits", "version": 3},
+{"attachments": [], "history": [], "created_date": "2016-10-31T21:03:37+0000", "owner": username[0], "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.", "watchers": [], "last_modifier": username[0], "modified_date": "2016-10-31T21:03:37+0000", "slug": "home", "version": 1}]
+total_activity=2 # default 2 from wiki pages
+# need wiki link to each wiki additional page
+wiki_links= [{"order": 1478851530729, "title": "CREDITS", "href": "credits"}]
 
 issueslist=[]
-#default setup
-points=[{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}]
+#default points setup, note the .5 is = to 1/2
+defaultpoints=[{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}]
 
-# power is how to feel
 taskslist=[]
 
-total_story_points=nil # used to create graph
+total_story_points=nil # used to create graph, could put a default value here, right now it uses the total of all story points which should make the graph completely equal
 
-isprivate=false #this will change after testing is done
+isprivate=false # all projects default value is not private
 
-memberships=[{"user_order": 1477923215395, "role": "Product Owner", "invited_by": nil, "user": username[1], "email": username[0], "is_admin": true, "created_at": "2016-10-31T14:13:35+0000", "invitation_extra_text": nil}]
+#1477923215395
+#this is currently ignored
+memberships=[{"user_order": nil, "role": "Product Owner", "invited_by": nil, "user": username[1], "email": username[0], "is_admin": true, "created_at": dateprojectcreated, "invitation_extra_text": nil}]
 #only do top if user email provided
 memberships=[]
 
 description=currentproject[0]['description']
-# "build a parser to convert jira xml to taiga and taiga json to jira xml."
-#in herit from project
+
+# colors of tags are ignored
 tags_colors=[["jira", nil], ["xml", nil]]
+tags_colors=[]
+# sprint="TJI Sprint 1" # can be nil
 
-sprint="TJI Sprint 1" # can be nil
+#create issue type list
+issuelist={}
 
-
-
-
-
-
-#create issue list
-issuelist=
-    {
-        "Sub-task":nil,
-        "Story":nil
-
-    }
-
-puts "generating issue type list"
+# generates issue type list
 for item in @doc.xpath("//IssueType")
     case item['name']
     when "Sub-task"
@@ -254,10 +185,10 @@ for item in @doc.xpath("//IssueType")
     end 
 end
 
-customfieldlist={
+# could get really crazy with custom values currently ignoring
+customfieldlist={}
 
-}
-puts "get custom field ids"
+# get custom field ids and add to dictionary all that exist
 for item in @doc.xpath("//CustomField")
     case item['name']
     when "Story Points"
@@ -268,63 +199,29 @@ for item in @doc.xpath("//CustomField")
 
 end
 # Sprint, Epics, Story Points
-#find points from here
-# <CustomField id="10006" customfieldtypekey="com.atlassian.jira.plugin.system.customfieldtypes:float" customfieldsearcherkey="com.atlassian.jira.plugin.system.customfieldtypes:exactnumber" name="Story Points" description="Measurement of complexity and/or size of a requirement."/>
-puts "customfield value:"
-# puts @doc.xpath("//CustomFieldValue[@customfield='10006' and @issue='10383']/@numbervalue")
-# puts customfieldlist['Story Points']['id']
-puts @doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+10383.to_s+"']/@numbervalue")
-puts "check if has attr."
-puts numberExists= @doc.xpath("//CustomFieldValue[@customfield='10000' and @issue='10385']/@numbervalue")
-puts numberExists.size
-puts numberExists.class.name
-puts numberExists
-# puts numberExists.class.column_names.include? "numbervalue"
-# <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
-
-# puts @doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']+"' and issue='"+10383.to_s+"']/@numbervalue") # should be 5.0
-puts "end custom field value...."
-# <CustomFieldValue id="10505" issue="10383" customfield="10006" numbervalue="5.0"/>
-    # <CustomFieldValue id="10507" issue="10385" customfield="10006" numbervalue="8.0"/>
-    # <CustomFieldValue id="10508" issue="10386" customfield="10006" numbervalue="5.0"/>
-    # <CustomFieldValue id="10509" issue="10384" customfield="10006" numbervalue="0.5"/>
-# <FieldConfiguration id="10106" name="Default Configuration for Story Points" description="Default configuration generated by JIRA" fieldid="customfield_10006"/>
-
-# <FieldConfiguration id="10106" name="Default Configuration for Story Points" description="Default configuration generated by JIRA" fieldid="customfield_10006"/>
 
 user_stories=[]
    
-
-puts "get assigned sprint:"
-sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
-
 # getsprint board name
-puts "board id function"
-# projectid=currentproject[0]['id'].to_s
-
-puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
-puts "get sprints"
-# puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
+
+# "get sprints"
+# another hard coded value, this may need to change on a different jira database
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
 
+# set default end_date if none given
 end_date=DateTime.now
-puts end_date
-# exit
+
 milestones=[]
-puts "each sprint"
+
+milestoneorder=1 # order in which milestone is placed
+
 # need to create a sprint list to keep track of task order
-milestoneorder=1
-
-
 milestonelistorder={}
-milestonelistorder["empty"]=0
+milestonelistorder["empty"]=0 # empty sprint list for tasks that don't have a sprint
 for sprint in sprintlist
-    # puts sprint
-    # puts sprint.search('boolean')[0]
-    # puts removeTag(sprint.search('boolean')[1],"boolean")
-    # puts removeTag(sprint.search('boolean')[1],"boolean")
-    if  removeTag(sprint.search('boolean')[1],"boolean") == "true" then
+    # use sprints default dates, other wise go off by 2 weeks to set default dates for taiga sprints
+    if removeTag(sprint.search('boolean')[1],"boolean") == "true" then
         startdate=removeInteger(sprint.search('integer')[5])
         end_date= removeInteger(sprint.search('integer')[1])
         startdate = DateTime.strptime(startdate.to_s,'%Q')
@@ -332,58 +229,63 @@ for sprint in sprintlist
     else
         startdate=end_date.next_day(1)   # moveDay(end_date)
         end_date=startdate.next_day(14) # move2Weeks(start_date)
-        # puts startdate.to_s + ": " + end_date.to_s
     end
     sprintname= generateSlug(removeTag(sprint.search('string')[1],"string"))
-    # puts boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true")
     newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": sprintname, "order": milestoneorder, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": DateTime.parse(startdate.to_s,'%Q')}
-    # puts newmilestone.to_s
-    puts "sprint name:"
-    puts sprintname
+    # add sprint to sprint order list
     milestonelistorder[sprintname]=0
-    # milestoneobject = {"name": sprintname, "order": 0}
-    # milestonelistorder.push(milestoneobject)
     milestoneorder+=1
+    # add sprint to milestones
     milestones.push(newmilestone)
+    total_activity+=1
 end
+# right now float, this get's changed to an integer after finishing
 totaluserpoints=0.0
 
 #get user stories use .push to add to array
 storylist=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"']")
-# <IssueLinkType id="10100" linkname="jira_subtask_link" inward="jira_subtask_inward" outward="jira_subtask_outward" style="jira_subtask"/>
-# puts "story list type" +storylist.class.name
+# this is used to link subtasks to the user story
 userstorylink={}
 
 # this pulls out all issues which is included but not limited to sub tasks, user stories epics, bugs
 # tasks and user stories are treated as users stories
 # bugs are treated as issues & any sub tasks of bugs are ignored
 for item in storylist
+    status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
+        finished_date=nil
+        if status=="Done"
+            finished_date=DateTime.parse(item["updated"],'%Q')
+        end
+    tagslist=[]
+    # generate "tags list"
+    for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+        tagslist.push(tag)
+    end
     if item['type']==issuelist["Story"]['id'] or item['type']==issuelist["Task"]['id']
-        # puts item 
-        #place summary in subject line
-        #generate user story list
-        #need to do points and sprint linked to, sprint order
-        #need to figure out order
-        puts "custom fields:"
+        # "custom fields:"
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
-        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
-        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
         sprintdetails=""
         sprintNum=0
         if sprintid.to_s != ""
             sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
             sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
-
-            puts generateSlug(sprintdetails)
-            puts "items in sprint"
             sprintNum= milestonelistorder[generateSlug(sprintdetails)]
             milestonelistorder[generateSlug(sprintdetails).to_s]+=1
         else
             sprintNum=milestonelistorder["empty"]
             milestonelistorder["empty"]+=1
         end
-        puts sprintNum
         if points.size==0
             points="?"
         else
@@ -395,98 +297,28 @@ for item in storylist
                 points=points.to_i.to_s
             end
         end
-        puts "points are:" + points
-        # next are dates, orders and comments
-        # maybe issues next
- 
-    #   "slug": "new",
-    #   "name": "New",
-    #   "slug": "ready",
-    #   "name": "Ready",
-    #   "slug": "in-progress",
-    #   "name": "In progress",
-    #   "slug": "ready-for-test",
-    #   "name": "Ready for test",
-    #   "slug": "done",
-    #   "name": "Done",
-    #   "slug": "archived",
-    #   "name": "Archived",
-     #jira: 
-     # To Do In Progress Done
-        status=  @doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
-
-        tagslist=[]
-        # puts "tags list"
-        # puts item['id']
-        # <Label id="10002" issue="10387" label="jira"/>
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
 
         newstory={"attachments": [], "sprint_order": sprintNum, "tribe_gig": nil, "team_requirement": false, "tags": tagslist, "ref": backlogorder, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": item['summary'], "status": status, "assigned_to": nil, "version": backlogorder, "finish_date": finished_date, "is_closed": false, "modified_date": DateTime.parse(item["updated"],'%Q'), "backlog_order": backlogorder, "milestone": sprintdetails, "kanban_order": backlogorder, "owner": username[0], "is_blocked": false, 
         "history": [], "blocked_note": "", "created_date": DateTime.parse(item["created"],'%Q'), "description": item['description'].to_s, "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": points, "role": "Back"}]}
         userstorylink[item['id']]=backlogorder
-        puts userstorylink[item['id']].to_s + " " + item['id']
-        
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
         # need to ignore subtasks of bugs and epics
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
-        # get userstory link
-        # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
         issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+linkuserstoryid+"']/@type").to_s
-        puts "issue type break"
         #should skip this if the linked task is not a story or task
         # e.g. epics and bugs are ignored
         if issuetype!=issuelist["Task"]['id'] and issuetype!=issuelist["Story"]['id']
             break
         end
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+linkuserstoryid+"']/@stringvalue") # 10000
-        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
-        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
         sprintdetails=""
         sprintNum=0
         if sprintid.to_s != ""
             sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
             sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
         end
-        # get tags from labels
-        tagslist=[]
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
+        
         newtask={"attachments": [],
             "tags": tagslist,
             "user_story": userstorylink[linkuserstoryid], # fun part....
@@ -512,39 +344,27 @@ for item in storylist
             "description": item['description'].to_s}
         taskslist.push(newtask)
     elsif item['type']==issuelist["Epic"]['id']
-        # epiclist.push(candy)
-
-        tagslist=[]
-        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
-            tagslist.push(tag)
-            puts tagslist
-        end
-        puts "epic link"
-        puts "//IssueLink[@source='"+item['id']+"']/@destination"
+        # "epic link"
         linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
-        puts linkuserstoryids
         related_user_stories=[]
 
-        # should check to verify that it's a task or user story'
         for userstory in linkuserstoryids
-            newlinkeduserstory={
+            issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+userstory.value+"']/@type").to_s
+        #should skip this if the linked task is not a story or task
+        # e.g. epics and bugs are ignored
+            if issuetype==issuelist["Task"]['id'] or issuetype==issuelist["Story"]['id']
+                newlinkeduserstory={
                 "user_story": userstorylink[userstory.value],
                 "order": backlogorder
                 }
-            related_user_stories.push(newlinkeduserstory)    
+                related_user_stories.push(newlinkeduserstory)
+            end
         end
-        puts related_user_stories
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
+        # could not add any epics that have nothing linked to them
+        # if related_user_stories.size==0
+        #     break
+        # end
+
         epic={
             "attachments": [],
             "assigned_to": nil,
@@ -570,25 +390,7 @@ for item in storylist
             }
         epiclist.push(epic)
     elsif item['type']==issuelist["Bug"]['id']
-        # issues support priorities others do not
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
-        puts "getting priority"
-        puts item["id"]
-        puts item["priority"]
+        # bug issues support priorities others do not
         priority=@doc.xpath("//Priority[@id='"+item["priority"]+"']/@name").to_s
         case priority
         when "High","Highest"
@@ -600,17 +402,6 @@ for item in storylist
         else
             priority="Low"
         end
-        puts "returning bug priority"
-        puts priority
-        
-# <Priority id="1" sequence="1" name="Highest" description="This problem will block progress." iconurl="/images/icons/priorities/highest.png" statusColor="#d04437"/>
-#     <Priority id="2" sequence="2" name="High" description="Serious problem that could block progress." iconurl="/images/icons/priorities/high.svg" statusColor="#ff6600"/>
-#     <Priority id="3" sequence="3" name="Medium" description="Has the potential to affect progress." iconurl="/images/icons/priorities/medium.svg" statusColor="#ffff00"/>
-#     <Priority id="4" sequence="4" name="Low" description="Minor problem or easily worked around." iconurl="/images/icons/priorities/low.svg" statusColor="#00cc33"/>
-#     <Priority id="5" sequence="5" name="Lowest" description="Trivial problem with little or no impact on progress." iconurl="/images/icons/priorities/lowest.svg" statusColor="#0000ff"/>
-
-
-
         issue={
             "votes": [],
             "created_date": DateTime.parse(item["created"],'%Q'),
@@ -630,7 +421,7 @@ for item in storylist
             "history": [],
             "blocked_note": "",
             "finished_date": finished_date,
-            "tags": [],
+            "tags": tagslist,
             "version": backlogorder,
             "attachments": [],
             "external_reference": nil,
@@ -638,77 +429,24 @@ for item in storylist
             }
         issueslist.push(issue)
         # if any sub tasks these will be ignored, although they could be added into the description
-        # issuelist
     else
         puts "this type is not included in the import: "+item['type']
     end 
     backlogorder+=1
-    #if subtask then....
-
-# issues=[
-# {"votes": [], "created_date": "2016-10-31T21:21:16+0000", "type": "Bug", "ref": 11, "watchers": [], "custom_attributes_values": {}, "subject": "taiga issue test", "status": "New", "severity": "Minor", "assigned_to": nil, "modified_date": "2016-10-31T21:32:33+0000", "milestone": nil, "owner": username[0], "is_blocked": false, "priority": "Low", "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"severity": 795218, "assigned_to": nil, "tags": [], "custom_attributes": [], "blocked_note": "", "milestone": nil, "owner": 164863, "blocked_note_html": "", "ref": 11, "is_blocked": false, "status": 1116113, "priority": 478781, "description_html": "", "subject": "taiga issue test", "type": 481276, "attachments": [], "description": ""}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:21:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"severity": {"795217": "Minor", "795218": "Normal"}}, "diff": {"severity": [795218, 795217]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], "Alympian Spectator"], "created_at": "2016-10-31T21:32:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"priority": {"478780": "Low", "478781": "Normal"}}, "diff": {"priority": [478781, 478780]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[1], username[0]], "created_at": "2016-10-31T21:32:33+0000", "is_hidden": false}], "blocked_note": "", "finished_date": nil, "tags": [], "version": 3, "attachments": [], "external_reference": nil, "description": ""}]
-# issues=[]
-# <Issue id="10387" key="TJI-5" number="5" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10000" summary="generate project on jira" description="sub task description" priority="3" status="3" created="2016-10-31 08:21:43.651" updated="2016-10-31 09:05:34.24" votes="0" watches="1" workflowId="10387"/>
-    
+    total_activity+=1
 end
 
-# history
-# {"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": username[2], "description_html": "<p>"+item['description'].to_s+"</p>", "subject": currentproject[0]['name'], "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": item['description'].to_s, "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": [username[1], username[0]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": [currentproject[0]['name'], item['summary']]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {sprintid: removeTag(sprintdetails,"string")}}, "diff": {"milestone": [nil, sprintid], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": [username[0], username[1]], "created_at": DateTime.parse(item["created"],'%Q'), "is_hidden": false}
+# if totalpoints is float add .5
+if totaluserpoints.class.name=="Float"
+    totaluserpoints+=0.5
+end
 
-total_story_points=totaluserpoints
-
-tasklist=@doc.xpath("//Issue")
-
-
+total_story_points=totaluserpoints.to_i
 
 
-# sub task has type 10000, main story has type 10000
-   # <Issue id="10383" key="TJI-1" number="1" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10002" summary="Generate data files" description="jira and taiga projects need to be generated mirroring the other and then exported" priority="4" status="10000" created="2016-10-31 08:16:17.589" updated="2016-10-31 14:42:49.856" votes="0" watches="1" workflowId="10383"/>
-# come from public.jiraissue table
-# get type 
-# <IssueType id="10000" sequence="0" name="Sub-task" style="jira_subtask" description="The sub-task of the issue" iconurl="/images/icons/issuetypes/subtask_alternate.png"/>
-#     <IssueType id="10001" name="Epic" description="gh.issue.epic.desc" iconurl="/images/icons/issuetypes/epic.svg"/>
-#     <IssueType id="10002" name="Story" description="gh.issue.story.desc" iconurl="/images/icons/issuetypes/story.svg"/>
-#     <IssueType id="10003" name="Task" style="" description="A task that needs to be done." avatar="10318"/>
-#     <IssueType id="10004" name="Bug" style="" description="A problem which impairs or prevents the functions of the product." 
+timeline=[] # this is ok to be empty, very possible to generate although low priority and usernames impossible
 
-
-
-# <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
-#     <IssueLink id="10099" linktype="10100" source="10383" destination="10388" sequence="1"/>
-#     <IssueLink id="10100" linktype="10100" source="10383" destination="10389" sequence="2"/>
-#     <IssueLink id="10101" linktype="10100" source="10383" destination="10390" sequence="3"/>
-#  <IssueLink id="10104" linktype="10200" source="10392" destination="10384"/>
-
-#get task list for each
-#    <Issue id="10387" key="TJI-5" number="5" project="10119" reporter="theefunk" assignee="theefunk" creator="theefunk" type="10000" summary="generate project on jira" description="sub task description" priority="3" status="3" created="2016-10-31 08:21:43.651" updated="2016-10-31 09:05:34.24" votes="0" watches="1" workflowId="10387"/>
-    # <Issue id="10388" key="TJI-6" number="6" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="export jira xml" priority="3" status="10000" created="2016-10-31 08:21:58.772" updated="2016-10-31 08:21:58.772" votes="0" watches="1" workflowId="10388"/>
-    # <Issue id="10389" key="TJI-7" number="7" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="generate project on taiga" priority="3" status="10000" created="2016-10-31 08:22:08.497" updated="2016-10-31 08:22:08.497" votes="0" watches="1" workflowId="10389"/>
-    # <Issue id="10390" key="TJI-8" number="8" project="10119" reporter="theefunk" creator="theefunk" type="10000" summary="export taiga json" priority="3" status="10000" created="2016-10-31 08:22:17.426" updated="2016-10-31 08:22:17.426" votes="0" watches="1" workflowId="10390"/> 
-
-
-
-storysubject="Download data files"
- 
-
-
-# singleuserstory={"attachments": [], "sprint_order": 1, "tribe_gig": nil, "team_requirement": false, "tags": [], "ref": 2, "watchers": [], "generated_from_issue": nil, "custom_attributes_values": {}, "subject": storysubject, "status": "New", "assigned_to": nil, "version": 4, "finish_date": nil, "is_closed": false, "modified_date": "2016-10-31T21:17:03+0000", "backlog_order": 0, "milestone": "TJI Sprint 1", "kanban_order": 1477944450673, "owner": "", "is_blocked": false, "history": [{"comment": "", "delete_comment_user": [], "values": {}, "diff": {}, "is_snapshot": true, "type": 2, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": {"attachments": [], "tribe_gig": nil, "ref": 2, "owner": 164863, "description_html": "", "subject": "TAIGA JIRA IMPORTER", "status": 939936, "is_blocked": false, "sprint_order": 1477944450673, "assigned_to": nil, "finish_date": "None", "is_closed": false, "backlog_order": 1477944450673, "custom_attributes": [], "milestone": nil, "kanban_order": 1477944450673, "points": {"970045": 1915738, "970044": 1915738, "970043": 1915738, "970046": 1915740}, "blocked_note_html": "", "from_issue": nil, "blocked_note": "", "tags": [], "description": "", "client_requirement": false, "team_requirement": false}, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T20:07:30+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {}, "diff": {"subject": ["TAIGA JIRA IMPORTER", "Download data files"]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:16:17+0000", "is_hidden": false}, {"comment": "", "delete_comment_user": [], "values": {"milestone": {"103261": "TJI Sprint 1"}}, "diff": {"milestone": [nil, 103261], "sprint_order": [1477944450673, 1]}, "is_snapshot": false, "type": 1, "delete_comment_date": nil, "edit_comment_date": nil, "snapshot": nil, "comment_versions": nil, "user": ["", "Alympian Spectator"], "created_at": "2016-10-31T21:17:04+0000", "is_hidden": false}], "blocked_note": "", "created_date": "2016-10-31T20:07:30+0000", "description": "", "client_requirement": false, "external_reference": nil, "role_points": [{"points": "?", "role": "UX"}, {"points": "?", "role": "Design"}, {"points": "?", "role": "Front"}, {"points": "1/2", "role": "Back"}]}.to_json
-#puts @doc.xpath("//AuditItem[@objectName='"+ currentproject[0]['name']+"']/@logId")
-
-
-#subject is key word
-
-# another important thing needing to be built
- #.to_json
-#typearray
-puts  "story type:" +  user_stories.class.name
-
-# use push to add to array
-# user_stories.push(singleuserstory)
-# user_story.to_hash << singleuserstory.to_has
-
-timeline=[] # this is ok to be empty, very possible to generate althought low priority and usernames impossible
-
+# this is what is populated from the above variables
 tempjson=
     {
 "transfer_token": nil,
@@ -725,22 +463,22 @@ tempjson=
 "issuecustomattributes": [],
 "default_priority": "Normal",
 "total_fans_last_year": 0,
-"wiki_links": [],
-"created_date": dateprojectcreated, # "2016-10-31T14:13:34+0000",
+"wiki_links": wiki_links, # needs to include each wikipage
+"created_date": dateprojectcreated, # datetime format e.g. "2016-10-31T14:13:34+0000",
 "creation_template": "scrum",
 "default_issue_status": "New",
-"is_epics_activated": true,
+"is_epics_activated": true, # default true
 "tasks_csv_uuid": nil,
 "default_epic_status": "New",
 "epics": epiclist,
 "blocked_code": nil,
-"wiki_pages": wikipages,
+"wiki_pages": wikipages, # uses default wikipages giving credit
 "userstorycustomattributes": [],
 "issues_csv_uuid": nil,
 "issues": issueslist,
 "looking_for_people_note": "",
 "is_featured": false,
-"points": [{"order": 1, "name": "?", "value": nil}, {"order": 2, "name": "0", "value": 0.0}, {"order": 3, "name": "1/2", "value": 0.5}, {"order": 4, "name": "1", "value": 1.0}, {"order": 5, "name": "2", "value": 2.0}, {"order": 6, "name": "3", "value": 3.0}, {"order": 7, "name": "5", "value": 5.0}, {"order": 8, "name": "8", "value": 8.0}, {"order": 9, "name": "10", "value": 10.0}, {"order": 10, "name": "13", "value": 13.0}, {"order": 11, "name": "20", "value": 20.0}, {"order": 12, "name": "40", "value": 40.0}],
+"points": defaultpoints,
 "anon_permissions": ["view_project", "view_epics", "view_tasks", "view_wiki_pages", "view_wiki_links", "view_us", "view_milestones", "view_issues"],
 "tasks": taskslist,
 "total_story_points": total_story_points, # can be nil, place value to see graph
@@ -757,12 +495,12 @@ tempjson=
 "default_issue_type": "Bug",
 "is_private": isprivate, # only one project per user
 "memberships": memberships,
-"tags": [],
+"tags": project_tags,
 "roles": [{"order": 10, "computable": true, "name": "UX", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "ux"}, {"order": 20, "computable": true, "name": "Design", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "design"}, {"order": 30, "computable": true, "name": "Front", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "front"}, {"order": 40, "computable": true, "name": "Back", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "back"}, {"order": 50, "computable": false, "name": "Product Owner", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "product-owner"}, {"order": 60, "computable": false, "name": "Stakeholder", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "view_milestones", "view_project", "view_tasks", "view_us", "modify_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "stakeholder"}],
-"description": description,
-"total_activity": 32, #needs to be recalculated
+"description": description, # project description
+"total_activity": total_activity, #uses all default points, really this isn't points, but activity or amount of tasks created
 "issue_statuses": [{"order": 1, "name": "New", "color": "#8C2318", "is_closed": false, "slug": "new"}, {"order": 2, "name": "In progress", "color": "#5E8C6A", "is_closed": false, "slug": "in-progress"}, {"order": 3, "name": "Ready for test", "color": "#88A65E", "is_closed": true, "slug": "ready-for-test"}, {"order": 4, "name": "Closed", "color": "#BFB35A", "is_closed": true, "slug": "closed"}, {"order": 5, "name": "Needs Info", "color": "#89BAB4", "is_closed": false, "slug": "needs-info"}, {"order": 6, "name": "Rejected", "color": "#CC0000", "is_closed": true, "slug": "rejected"}, {"order": 7, "name": "Postponed", "color": "#666666", "is_closed": false, "slug": "postponed"}],
-"is_wiki_activated": false, # going to go w/ false
+"is_wiki_activated": true, # true b/c credits would be deleted otherwise
 "is_backlog_activated": true,
 "priorities": [{"order": 1, "name": "Low", "color": "#666666"}, {"order": 3, "name": "Normal", "color": "#669933"}, {"order": 5, "name": "High", "color": "#CC0000"}],
 "total_activity_last_year": 32, #need to testing
@@ -783,15 +521,16 @@ tempjson=
 # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 # print tempjson
 # print JSON.pretty_generate(tempjson) #.to_json
-puts "end parser"
-puts currentproject[0]['name'].downcase.tr!(" ", "-").to_s
+
+puts "saving project to:"+currentproject[0]['name'].downcase.tr!(" ", "-").to_s
 File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
   f.write(JSON.pretty_generate(tempjson))
 #   f.write(tempjson.to_json)
 #   f.puts JSON.pretty_generate(tempjson)
 end
 
-
+end # end if response
+puts "end parser"
 # File.open("taigaproject1a.json","w") do |f|
 #   File.open("taigaproject.1.json") do |o|
 #     openjson=JSON(o.read)
@@ -814,39 +553,3 @@ tempHash = {
 # end
 
 
-
-
-# puts (@doc.xpath("//Project")).to_s
-# puts "candy"
-# http://www.w3schools.com/xml/xpath_syntax.asp
-
-# print
-#database schema https://developer.atlassian.com/jiradev/jira-platform/jira-architecture/database-schema
-# ar_tires = @doc.xpath('//car:tire', 'car' => 'http://alicesautoparts.com/')
-#convert to taiga json
-    # <Project id="10119" name="TAIGA JIRA IMPORTER" url="https://tree.taiga.io/project/last_link-taiga-jira-importer/backlog" lead="username[0]" description="build a parser to convert jira xml to taiga and taiga json to jira xml." key="TJI" counter="10" assigneetype="3" avatar="10510" originalkey="TJI" projecttype="software"/>
-
-# <AuditChangedValue id="10737" logId="10492" name="Name" deltaTo="Software Simplified Workflow for Project TJI"/>
-#     <AuditChangedValue id="10738" logId="10492" name="Description" deltaTo="Generated by JIRA Software version 7.2.8-DAILY20160816152029. This workflow is managed internally by JIRA Software. Do not manually modify this workflow."/>
-#     <AuditChangedValue id="10739" logId="10493" name="Name" deltaTo="TJI: Software Simplified Workflow Scheme"/>
-#     <AuditChangedValue id="10740" logId="10493" name="Description" deltaTo="Generated by JIRA Software version 7.2.8-DAILY20160816152029. This workflow scheme is managed internally by JIRA Software. Do not manually modify this workflow scheme."/>
-#     <AuditChangedValue id="10741" logId="10497" name="Name" deltaTo="TAIGA JIRA IMPORTER"/>
-#     <AuditChangedValue id="10742" logId="10497" name="Key" deltaTo="TJI"/>
-#     <AuditChangedValue id="10743" logId="10497" name="Description" deltaTo=""/>
-#     <AuditChangedValue id="10744" logId="10497" name="URL" deltaTo=""/>
-#     <AuditChangedValue id="10745" logId="10497" name="Project Lead" deltaTo="username[0]"/>
-#     <AuditChangedValue id="10746" logId="10497" name="Default Assignee" deltaTo="Unassigned"/>
-#     <AuditChangedValue id="10747" logId="10498" name="Description" deltaFrom="" deltaTo="build a parser to convert jira xml to taiga and taiga json to jira xml."/>
-#     <AuditChangedValue id="10748" logId="10498" name="URL" deltaFrom="" deltaTo="https://tree.taiga.io/project/last_link-taiga-jira-importer/backlog"/>
-#     <AuditChangedValue id="10749" logId="10500" name="Name" deltaTo="Version One"/>
-#     <AuditChangedValue id="10750" logId="10500" name="Description" deltaTo="finish exporter v1"/>
-#     <AuditChangedValue id="10751" logId="10500" name="Release date" deltaTo="2016-12-10"/>
-#     <AuditChangedValue id="10752" logId="10501" name="Name" deltaTo="jira data"/>
-#     <AuditChangedValue id="10753" logId="10501" name="Description" deltaTo="test component"/>
-#     <AuditChangedValue id="10754" logId="10501" name="Component Lead" deltaTo="username[0]"/>
-#     <AuditChangedValue id="10755" logId="10501" name="Default Assignee" deltaTo="Component Lead"/>
-#     <AuditChangedValue id="10756" logId="10502" name="Name" deltaTo="Completed Version"/>
-#     <AuditChangedValue id="10757" logId="10502" name="Description" deltaTo="test completion"/>
-#     <AuditChangedValue id="10758" logId="10502" name="Release date" deltaTo="2016-10-31"/>
-#     <AuditChangedValue id="10759" logId="10504" name="Name" deltaTo="test Comp"/>
-#     <AuditChangedValue id="10760" logId="10504" name="Default Assignee" deltaTo="Project Default"/>
