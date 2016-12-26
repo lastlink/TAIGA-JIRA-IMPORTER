@@ -62,7 +62,7 @@ end
 # this generates taiga slug by making lowercase and adding dash - to spaces
 def generateSlug(text)
     text=text.to_s
-    return text.downcase.tr!(" ", "-").to_s
+    return text.downcase.gsub(" ", "-").to_s
 end
 # returns true if 1 integer passed
 def boolean(boolI)
