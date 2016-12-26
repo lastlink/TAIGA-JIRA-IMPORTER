@@ -64,12 +64,9 @@ if response==1
             end
         end
     end
+    # change project list to be array of only 1 item
+    projectlist=[projectname]
 end # end response 1 if statement
-# puts projectname
-# change project list to be array of only 1 item
-projectlist=[projectname]
-
-
 
 for item in projectlist
     puts item
