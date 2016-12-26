@@ -61,6 +61,11 @@
 * [x] History ignored (could be done, but just letting taiga auto generated everything as it's imported)
 * [x] sprint story board name, tries to convert name to this, if fails gives user option to manually input
 
+###Issues
+* Any ' apostrophes cause issues when being searched in xpath
+* Other projects not successfully importing giving an error: [Taiga] error importing project data
+    * need to consult taiga support to fix this
+
 ####Supported:
 * [x] Export Project names
 * [x] Export json
@@ -70,5 +75,5 @@
 * [x] Epics 
 * [x] Issues - only bugs
 * [x] Cleaup code part 1
-* [ ] generate json files for each project in xml database (right now done manually by name given)
+* [x] generate json files for each project in xml database (right now done manually by name given)
 * [ ] make milestone dynamic right now sprint story board namespace is hard coded in
