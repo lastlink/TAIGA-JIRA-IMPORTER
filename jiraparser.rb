@@ -70,18 +70,24 @@ end # end response 1 if statement
 
 for item in projectlist
     puts item
-
-    projectname=item.to_s.gsub("'","&apos;")
+    # skip those w/ '
+    if item.to_s.include? "'"
+        next
+    end
+    projectname=item.to_s #.gsub("'","&apos;")
     # get specific project
+    puts projectname
     currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
     puts currentproject[0]
-
+    
     # puts convertToBoard(projectname)
     # exit
     # another complex part sprint board naming, looks like if one word graps first 3 or 4 letters, no more than 3 letters
-    board=" board"
+    board=" Board"
     # attempt to convert if doesn't exist give user option then skip'
-    sprintboard=convertToBoard(projectname)+board
+    # sprintboard=convertToBoard(projectname)+board
+    # use project key to get board name
+    sprintboard=currentproject[0]['key']+board
     puts sprintboard
 
     sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
@@ -96,6 +102,7 @@ for item in projectlist
         sprintboard=sprintboard+board
         puts sprintboard
         sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
+        puts sprintobject
         # sprintobject=sprintobject.to_s
     end
     # this will be for forloop
@@ -121,8 +128,10 @@ for item in projectlist
     # taiga uses a datetime format similar to 2016-10-31T14:13:34+0000 for all it's dates
     # audid log is like history in taiga, only use it to get the creation date of the project
     # I really leave history blank for the taiga project, as users can't really be imported there is no point to importing user history from jira
+    puts "project info"
+    # puts currentproject[0]
     dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
-
+    
     project_tags=[]
     # get any labels for jira project and add to taiga project tags
     for tag in @doc.xpath("//Label[@issue='"+currentproject[0]['id']+"']/@label")
@@ -202,11 +211,14 @@ for item in projectlist
     
     # getsprint board name
     tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
-
+    puts tjiboardid
+    puts tjiboardid.class.name
+    puts tjiboardid.size
     # "get sprints"
     # another hard coded value, this may need to change on a different jira database
     sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
-
+    puts "sprint list:"
+    puts sprintlist
     # set default end_date if none given
     end_date=DateTime.now
 
@@ -228,7 +240,9 @@ for item in projectlist
             startdate=end_date.next_day(1)   # moveDay(end_date)
             end_date=startdate.next_day(14) # move2Weeks(start_date)
         end
+        # puts sprint
         sprintname= generateSlug(removeTag(sprint.search('string')[1],"string"))
+        # puts sprintname
         newmilestone={"estimated_start": startdate.strftime("%Y-%m-%d"), "watchers": [], "estimated_finish": end_date.strftime("%Y-%m-%d"), "created_date": startdate.to_s, "slug": sprintname, "order": milestoneorder, "disponibility": 0.0, "name": removeTag(sprint.search('string')[1],"string"), "closed": boolean(removeTag(sprint.search('boolean')[0],"boolean")=="true"), "owner": "", "modified_date": DateTime.parse(startdate.to_s,'%Q')}
         # add sprint to sprint order list
         milestonelistorder[sprintname]=0
@@ -237,6 +251,7 @@ for item in projectlist
         milestones.push(newmilestone)
         total_activity+=1
     end
+    # exit
     # right now float, this get's changed to an integer after finishing
     totaluserpoints=0.0
 
@@ -272,14 +287,26 @@ for item in projectlist
         if item['type']==issuelist["Story"]['id'] or item['type']==issuelist["Task"]['id']
             # "custom fields:"
             points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
-            sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
+            sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue")[0] # 10000
+            sprintid.to_s.gsub(" ","")
             sprintdetails=""
             sprintNum=0
             if sprintid.to_s != ""
+                sprintid=sprintid.to_s.to_i.to_s
+                @activeObjects=Nokogiri::XML(File.open(jira_active))
+                @activeObjects.remove_namespaces!
                 sprintdetails= @activeObjects.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']")[0]
+                
                 sprintdetails=removeTag(sprintdetails.search('string')[1],"string")
                 sprintNum= milestonelistorder[generateSlug(sprintdetails)]
-                milestonelistorder[generateSlug(sprintdetails).to_s]+=1
+                # puts milestonelistorder
+                # puts generateSlug(sprintdetails)
+                if milestonelistorder[generateSlug(sprintdetails).to_s] != nil
+                    milestonelistorder[generateSlug(sprintdetails).to_s]+=1
+                else
+                    sprintNum=milestonelistorder["empty"]
+                    milestonelistorder["empty"]+=1
+                end
             else
                 sprintNum=milestonelistorder["empty"]
                 milestonelistorder["empty"]+=1
@@ -342,51 +369,7 @@ for item in projectlist
                 "description": item['description'].to_s}
             taskslist.push(newtask)
         elsif item['type']==issuelist["Epic"]['id']
-            # "epic link"
-            linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
-            related_user_stories=[]
-
-            for userstory in linkuserstoryids
-                issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+userstory.value+"']/@type").to_s
-            #should skip this if the linked task is not a story or task
-            # e.g. epics and bugs are ignored
-                if issuetype==issuelist["Task"]['id'] or issuetype==issuelist["Story"]['id']
-                    newlinkeduserstory={
-                    "user_story": userstorylink[userstory.value],
-                    "order": backlogorder
-                    }
-                    related_user_stories.push(newlinkeduserstory)
-                end
-            end
-            # could not add any epics that have nothing linked to them
-            # if related_user_stories.size==0
-            #     break
-            # end
-
-            epic={
-                "attachments": [],
-                "assigned_to": nil,
-                "version": backlogorder,
-                "tags": tagslist,
-                "client_requirement": false,
-                "description": item['description'].to_s,
-                "related_user_stories": related_user_stories,
-                "owner": "",
-                "epics_order": backlogorder,
-                "ref": backlogorder,
-                "watchers": [],
-                "history": [],
-                "blocked_note": "",
-                "custom_attributes_values": {},
-                "created_date": DateTime.parse(item["created"],'%Q'),
-                "subject": item['summary'],
-                "status": status,
-                "is_blocked": false,
-                "color": "#d3d7cf",
-                "modified_date": DateTime.parse(item["updated"],'%Q'),
-                "team_requirement": false
-                }
-            epiclist.push(epic)
+            next
         elsif item['type']==issuelist["Bug"]['id']
             # bug issues support priorities others do not
             priority=@doc.xpath("//Priority[@id='"+item["priority"]+"']/@name").to_s
@@ -433,6 +416,82 @@ for item in projectlist
         backlogorder+=1
         total_activity+=1
     end
+    # now run for epics
+    for item in storylist
+        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+            case status
+            when "To Do"
+                status="New"
+            when "In Progress"
+                status="In progress"
+            when "Done"
+                status="Done"
+            else
+                status="New"
+            end
+            finished_date=nil
+            if status=="Done"
+                finished_date=DateTime.parse(item["updated"],'%Q')
+            end
+        tagslist=[]
+        # generate "tags list"
+        for tag in @doc.xpath("//Label[@issue='"+item['id']+"']/@label")
+            tagslist.push(tag)
+        end
+        if item['type']==issuelist["Epic"]['id']
+            # "epic link"
+            linkuserstoryids=@doc.xpath("//IssueLink[@source='"+item['id']+"']/@destination")
+            related_user_stories=[]
+            storyorder=1
+            for userstory in linkuserstoryids
+                issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+userstory.value+"']/@type").to_s
+            #should skip this if the linked task is not a story or task
+            # e.g. epics and bugs are ignored
+            # and userstory.value.to_s.size>0
+                # puts userstory.value.to_s.size
+                if (issuetype==issuelist["Task"]['id'] or issuetype==issuelist["Story"]['id']) 
+                    newlinkeduserstory={
+                    "user_story": userstorylink[userstory.value],
+                    "order": storyorder
+                    }
+                    related_user_stories.push(newlinkeduserstory)
+                end
+                storyorder+=1
+            end
+            # could not add any epics that have nothing linked to them
+            # if related_user_stories.size==0
+            #     break
+            # end
+
+            epic={
+                "attachments": [],
+                "assigned_to": nil,
+                "version": backlogorder,
+                "tags": tagslist,
+                "client_requirement": false,
+                "description": item['description'].to_s,
+                "related_user_stories": related_user_stories,
+                "owner": "",
+                "epics_order": backlogorder,
+                "ref": backlogorder,
+                "watchers": [],
+                "history": [],
+                "blocked_note": "",
+                "custom_attributes_values": {},
+                "created_date": DateTime.parse(item["created"],'%Q'),
+                "subject": item['summary'],
+                "status": status,
+                "is_blocked": false,
+                "color": "#d3d7cf",
+                "modified_date": DateTime.parse(item["updated"],'%Q'),
+                "team_requirement": false
+                }
+            epiclist.push(epic)
+        
+        end 
+        backlogorder+=1
+        total_activity+=1
+    end
 
     # if totalpoints is float add .5
     if totaluserpoints.class.name=="Float"
@@ -440,7 +499,9 @@ for item in projectlist
     end
 
     total_story_points=totaluserpoints.to_i
-
+    if total_story_points.to_s=="0"
+        total_story_points=nil
+    end
 
     timeline=[] # this is ok to be empty, very possible to generate although low priority and usernames impossible
 
@@ -501,10 +562,10 @@ for item in projectlist
     "is_wiki_activated": true, # true b/c credits would be deleted otherwise
     "is_backlog_activated": true,
     "priorities": [{"order": 1, "name": "Low", "color": "#666666"}, {"order": 3, "name": "Normal", "color": "#669933"}, {"order": 5, "name": "High", "color": "#CC0000"}],
-    "total_activity_last_year": 32, #need to testing
+    "total_activity_last_year": 0, #need to testing
     "tags_colors": tags_colors,
     "severities": [{"order": 1, "name": "Wishlist", "color": "#666666"}, {"order": 2, "name": "Minor", "color": "#669933"}, {"order": 3, "name": "Normal", "color": "#0000FF"}, {"order": 4, "name": "Important", "color": "#FFA500"}, {"order": 5, "name": "Critical", "color": "#CC0000"}],
-    "total_activity_last_month": 32, # need to test
+    "total_activity_last_month": 0, # need to test
     "epics_csv_uuid": nil,
     "default_points": "?",
     "total_fans_last_week": 0,
