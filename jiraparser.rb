@@ -25,7 +25,8 @@ jira_active = "jira_xml_databases/activeobjects.xml"
 #list project names
 puts "Available Projects:"
 projectlist= @doc.xpath("//Project/@name")
-
+puts projectlist
+exit
 
 # //Project/@name
 # # type: Nokogiri::XML::NodeSet
