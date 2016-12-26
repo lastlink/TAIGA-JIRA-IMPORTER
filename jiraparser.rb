@@ -85,35 +85,20 @@ backlogorder=1
 dateprojectcreated=DateTime.parse(@doc.xpath("//AuditLog[@objectId='"+currentproject[0]['id']+"' and @summary='Project created']/@created").to_s,'%Q')
 
 project_tags=[]
+# get any labels for jira project and add to taiga project tags
+for tag in @doc.xpath("//Label[@issue='"+currentproject[0]['id']+"']/@label")
+    project_tags.push(tag)
+end
 
 epiclist=[]
-
 
 # default wiki pages giving credit to self, really these could only come from confluence since jira doesn't have a wiki'
 wikipages=[
 {"attachments": [], "history": [], "created_date": "2016-11-11T08:05:30+0000", "owner": username[0], "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "watchers": [], "last_modifier": username[0], "modified_date": "2016-11-11T08:07:48+0000", "slug": "credits", "version": 3},
 {"attachments": [], "history": [], "created_date": "2016-10-31T21:03:37+0000", "owner": username[0], "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.", "watchers": [], "last_modifier": username[0], "modified_date": "2016-10-31T21:03:37+0000", "slug": "home", "version": 1}]
 total_activity=2 # default 2 from wiki pages
+# need wiki link to each wiki additional page
 wiki_links= [{"order": 1478851530729, "title": "CREDITS", "href": "credits"}]
-
-# [{
-#       "watchers": [
-
-#       ],
-#       "history": [
-        
-#       ],
-#       "last_modifier": "",
-#       "created_date": "2016-10-31T21:03:37+0000",
-#       "slug": "home",
-#       "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.",
-#       "version": 1,
-#       "modified_date": "2016-10-31T21:03:37+0000",
-#       "owner": "",
-#       "attachments": [
-
-#       ]
-#     },{"watchers": [], "history": [], "last_modifier": username[0], "created_date": "2016-11-11T08:05:30+0000", "slug": "credits", "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "version": 3, "modified_date": "2016-11-11T08:07:48+0000", "owner": username[0], "attachments": []}]
 
 issueslist=[]
 #default points setup, note the .5 is = to 1/2
@@ -123,7 +108,7 @@ taskslist=[]
 
 total_story_points=nil # used to create graph, could put a default value here, right now it uses the total of all story points which should make the graph completely equal
 
-isprivate=false #all projects default value is not private
+isprivate=false # all projects default value is not private
 
 #1477923215395
 #this is currently ignored
@@ -132,18 +117,14 @@ memberships=[{"user_order": nil, "role": "Product Owner", "invited_by": nil, "us
 memberships=[]
 
 description=currentproject[0]['description']
-# "build a parser to convert jira xml to taiga and taiga json to jira xml."
-#in herit from project
+
+# colors of tags are ignored
 tags_colors=[["jira", nil], ["xml", nil]]
 tags_colors=[]
 # sprint="TJI Sprint 1" # can be nil
 
-#create issue list
-issuelist=
-    {
-        # "Sub-task":nil,
-        # "Story":nil
-    }
+#create issue type list
+issuelist={}
 
 # generates issue type list
 for item in @doc.xpath("//IssueType")
@@ -163,10 +144,10 @@ for item in @doc.xpath("//IssueType")
     end 
 end
 
-customfieldlist={
+# could get really crazy with custom values currently ignoring
+customfieldlist={}
 
-}
-puts "get custom field ids"
+# get custom field ids and add to dictionary all that exist
 for item in @doc.xpath("//CustomField")
     case item['name']
     when "Story Points"
@@ -177,62 +158,27 @@ for item in @doc.xpath("//CustomField")
 
 end
 # Sprint, Epics, Story Points
-#find points from here
-# <CustomField id="10006" customfieldtypekey="com.atlassian.jira.plugin.system.customfieldtypes:float" customfieldsearcherkey="com.atlassian.jira.plugin.system.customfieldtypes:exactnumber" name="Story Points" description="Measurement of complexity and/or size of a requirement."/>
-puts "customfield value:"
-# puts @doc.xpath("//CustomFieldValue[@customfield='10006' and @issue='10383']/@numbervalue")
-# puts customfieldlist['Story Points']['id']
-puts @doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+10383.to_s+"']/@numbervalue")
-puts "check if has attr."
-puts numberExists= @doc.xpath("//CustomFieldValue[@customfield='10000' and @issue='10385']/@numbervalue")
-puts numberExists.size
-puts numberExists.class.name
-puts numberExists
-# puts numberExists.class.column_names.include? "numbervalue"
-# <CustomFieldValue id="10500" issue="10385" customfield="10000" stringvalue="48"/>
-
-# puts @doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']+"' and issue='"+10383.to_s+"']/@numbervalue") # should be 5.0
-puts "end custom field value...."
-# <CustomFieldValue id="10505" issue="10383" customfield="10006" numbervalue="5.0"/>
-    # <CustomFieldValue id="10507" issue="10385" customfield="10006" numbervalue="8.0"/>
-    # <CustomFieldValue id="10508" issue="10386" customfield="10006" numbervalue="5.0"/>
-    # <CustomFieldValue id="10509" issue="10384" customfield="10006" numbervalue="0.5"/>
-# <FieldConfiguration id="10106" name="Default Configuration for Story Points" description="Default configuration generated by JIRA" fieldid="customfield_10006"/>
-
-# <FieldConfiguration id="10106" name="Default Configuration for Story Points" description="Default configuration generated by JIRA" fieldid="customfield_10006"/>
 
 user_stories=[]
    
-
-puts "get assigned sprint:"
-sprintid=@doc.xpath("//CustomFieldValue [@issue='10385' and @customfield='10000']/@stringvalue")
-
 # getsprint board name
-puts "board id function"
-# projectid=currentproject[0]['id'].to_s
-
-puts currentproject[0]['id'] +" entity:"+jira_entities+" active:"+jira_active
 tjiboardid= getBoardId(currentproject[0]['id'],jira_entities,jira_active)
-puts "get sprints"
-# puts @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[integer='"+tjiboardid+"'][position()=2]")
+
+# "get sprints"
+# another hard coded value, this may need to change on a different jira database
 sprintlist= @activeObjectstemp.xpath("//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[4])='"+tjiboardid+"']")
 
+# set default end_date if none given
 end_date=DateTime.now
-puts end_date
-# exit
+
 milestones=[]
-puts "each sprint"
+
+milestoneorder=1 # order in which milestone is placed
+
 # need to create a sprint list to keep track of task order
-milestoneorder=1
-
-
 milestonelistorder={}
-milestonelistorder["empty"]=0
+milestonelistorder["empty"]=0 # empty sprint list for tasks that don't have a sprint
 for sprint in sprintlist
-    # puts sprint
-    # puts sprint.search('boolean')[0]
-    # puts removeTag(sprint.search('boolean')[1],"boolean")
-    # puts removeTag(sprint.search('boolean')[1],"boolean")
     if  removeTag(sprint.search('boolean')[1],"boolean") == "true" then
         startdate=removeInteger(sprint.search('integer')[5])
         end_date= removeInteger(sprint.search('integer')[1])
@@ -333,19 +279,14 @@ for item in storylist
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
         # need to ignore subtasks of bugs and epics
-        # get userstory link
-        # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
         issuetype=@doc.xpath("//Issue[@project='"+ currentproject[0]['id']+"' and @id='"+linkuserstoryid+"']/@type").to_s
-        puts "issue type break"
         #should skip this if the linked task is not a story or task
         # e.g. epics and bugs are ignored
         if issuetype!=issuelist["Task"]['id'] and issuetype!=issuelist["Story"]['id']
             break
         end
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+linkuserstoryid+"']/@stringvalue") # 10000
-        puts "//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue"
-        puts "//data[@tableName='AO_60DB71_SPRINT']/row[normalize-space(integer[3])='"+sprintid.to_s+"']"
         sprintdetails=""
         sprintNum=0
         if sprintid.to_s != ""
