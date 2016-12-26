@@ -71,7 +71,7 @@ end # end response 1 if statement
 for item in projectlist
     puts item
 
-    projectname=item.gsub("'","&apos;")
+    projectname=item.to_s.gsub("'","&apos;")
     # get specific project
     currentproject= @doc.xpath("//Project[@name='"+projectname+"']")
     puts currentproject[0]
@@ -96,7 +96,7 @@ for item in projectlist
         sprintboard=sprintboard+board
         puts sprintboard
         sprintobject = @activeObjects.xpath("//data[@tableName='AO_60DB71_RAPIDVIEW']/row[string='"+sprintboard+"']")
-        sprintobject=sprintobject.to_s
+        # sprintobject=sprintobject.to_s
     end
     # this will be for forloop
     if sprintboard=="0 board"
@@ -105,9 +105,8 @@ for item in projectlist
         # next
     end
     puts "valid sprint board name"
-
     sprintobject= removeInteger(sprintobject[0].search('integer')[0])
-
+    exit
     # needs to be an email on taiga
     # however leaving it blank will result in creator being replaced by the user importing the taiga json
     #initialize variables
