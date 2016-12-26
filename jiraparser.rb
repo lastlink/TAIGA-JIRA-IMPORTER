@@ -519,10 +519,10 @@ for item in projectlist
     # currentproject[0]['name'].downcase.tr!(" ", "-").to_s
     # print tempjson
     # print JSON.pretty_generate(tempjson) #.to_json
-    puts currentproject[0]['name']
-    puts "saving project to:"+currentproject[0]['name'].downcase.tr!(" ", "-").to_s
-    exit
-    File.open(currentproject[0]['name'].downcase.tr!(" ", "-").to_s+".json","w") do |f|
+    # puts currentproject[0]['name']
+    puts "saving project to:\\taiga_json_export\\"+generateSlug(currentproject[0]['name'])+".json"
+    
+    File.open(generateSlug("\\taiga_json_export\\"+currentproject[0]['name'])+".json","w") do |f|
     f.write(JSON.pretty_generate(tempjson))
     #   f.write(tempjson.to_json)
     #   f.puts JSON.pretty_generate(tempjson)
