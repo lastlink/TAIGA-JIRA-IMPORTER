@@ -268,12 +268,22 @@ userstorylink={}
 # tasks and user stories are treated as users stories
 # bugs are treated as issues & any sub tasks of bugs are ignored
 for item in storylist
+    status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
+        case status
+        when "To Do"
+            status="New"
+        when "In Progress"
+            status="In progress"
+        when "Done"
+            status="Done"
+        else
+            status="New"
+        end
+        finished_date=nil
+        if status=="Done"
+            finished_date=DateTime.parse(item["updated"],'%Q')
+        end
     if item['type']==issuelist["Story"]['id'] or item['type']==issuelist["Task"]['id']
-        # puts item 
-        #place summary in subject line
-        #generate user story list
-        #need to do points and sprint linked to, sprint order
-        #need to figure out order
         puts "custom fields:"
         points=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Story Points']['id']+"' and @issue='"+item['id']+"']/@numbervalue") # 10006
         sprintid=@doc.xpath("//CustomFieldValue[@customfield='"+customfieldlist['Sprint']['id']+"' and @issue='"+item['id']+"']/@stringvalue") # 10000
@@ -306,39 +316,6 @@ for item in storylist
             end
         end
         puts "points are:" + points
-        # next are dates, orders and comments
-        # maybe issues next
- 
-    #   "slug": "new",
-    #   "name": "New",
-    #   "slug": "ready",
-    #   "name": "Ready",
-    #   "slug": "in-progress",
-    #   "name": "In progress",
-    #   "slug": "ready-for-test",
-    #   "name": "Ready for test",
-    #   "slug": "done",
-    #   "name": "Done",
-    #   "slug": "archived",
-    #   "name": "Archived",
-     #jira: 
-     # To Do In Progress Done
-        status=  @doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
-
         tagslist=[]
         # puts "tags list"
         # puts item['id']
@@ -356,22 +333,6 @@ for item in storylist
         user_stories.push(newstory)
     elsif item['type']==issuelist["Sub-task"]['id']
         # need to ignore subtasks of bugs and epics
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
         # get userstory link
         # <IssueLink id="10098" linktype="10100" source="10383" destination="10387" sequence="0"/>
         linkuserstoryid=@doc.xpath("//IssueLink[@destination='"+item['id']+"']/@source").to_s
@@ -481,24 +442,6 @@ for item in storylist
         epiclist.push(epic)
     elsif item['type']==issuelist["Bug"]['id']
         # issues support priorities others do not
-        status=@doc.xpath("//Status[@id='"+item["status"]+"']/@name").to_s
-        case status
-        when "To Do"
-            status="New"
-        when "In Progress"
-            status="In progress"
-        when "Done"
-            status="Done"
-        else
-            status="New"
-        end
-        finished_date=nil
-        if status=="Done"
-            finished_date=DateTime.parse(item["updated"],'%Q')
-        end
-        puts "getting priority"
-        puts item["id"]
-        puts item["priority"]
         priority=@doc.xpath("//Priority[@id='"+item["priority"]+"']/@name").to_s
         case priority
         when "High","Highest"
