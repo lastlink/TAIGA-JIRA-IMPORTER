@@ -5,6 +5,19 @@
 ##Description:
 * Goal is to build a parser that will convert jira xml to taiga json format and a parser that does that opposite.
 
+##Instructions:
+* Copy latest backup xml files from C:\Program Files\Atlassian\Application Data\JIRA\export
+    * These will be entities.xml & activeobjects.xml in the most recent zip file. It is possible to force a backup from the admin daskboard e.g. http://jiraurl/secure/admin/XmlBackup.jspa
+    * Copy these into the jira_xml_databases folder
+* Make sure to have ruby installed on the computer and to gem install the dependencies
+    * gem install 
+        * nokogiri # provides support for xpath queries
+        * iconv # used for cleaning bad control characters
+        * json # used to export to json
+        * date
+* Cd into the project
+    * ruby jiraparser.rb 
+
 ###Technologies
 * Software Project Management Platforms
     * JIRA (xml database of all projects supports json import)
@@ -23,6 +36,10 @@
 * [Source](https://tree.taiga.io/project/last_link-taiga-jira-importer/) this may become invalid when project with project being reimported
 * Owner is left blank unless email in taiga database
 * Logo is saved as img text file
+* Uses default jira values, may tweak to inlude your own custom ones
+* Jira tasks are treated as stories
+* Priority is only used for bug issues
+* Any only sub tasks for Tasks and stories are imported any others are ignored
 
 ###Jira xml notes
 * project id is 24
@@ -32,7 +49,7 @@
 
 ####Not Supported:
 * [ ] Logos saved in some string 64 format
-* [x] History (could be done, but just letting taiga auto generated everything as it's imported)
+* [x] History ignored (could be done, but just letting taiga auto generated everything as it's imported)
 
 ####Supported:
 * [x] Export Project names
@@ -41,6 +58,6 @@
 * [x] User ignored for user importing
 * [x] sprints/milestones, userstories, subtasks, and tasks Supported
 * [x] Epics 
-* [ ] Issues
+* [x] Issues - only bugs
 * [ ] generate json files for each project in xml database (right now done manually by name given)
 * [ ] make milestone dynamic right now sprint story board namespace is hard coded in
