@@ -93,7 +93,7 @@ epiclist=[]
 wikipages=[
 {"attachments": [], "history": [], "created_date": "2016-11-11T08:05:30+0000", "owner": username[0], "content": "This project has been converted from JIRA using [lastlink](https://github.com/lastlink \"lastlink\")'s parser. \n\nGithub [source](https://github.com/lastlink/TAIGA-JIRA-IMPORTER \"source\").", "watchers": [], "last_modifier": username[0], "modified_date": "2016-11-11T08:07:48+0000", "slug": "credits", "version": 3},
 {"attachments": [], "history": [], "created_date": "2016-10-31T21:03:37+0000", "owner": username[0], "content": "Goal of this project is to build an importer into taiga from jira and vice versa. Nothing as this exists now. I need to change datatypes. Jira is xml and taiga is json. Will be comparing both these projects and may post the files here. Plan to use python to convert.", "watchers": [], "last_modifier": username[0], "modified_date": "2016-10-31T21:03:37+0000", "slug": "home", "version": 1}]
-
+total_activity=2 # default 2 from wiki pages
 wiki_links= [{"order": 1478851530729, "title": "CREDITS", "href": "credits"}]
 
 # [{
@@ -254,6 +254,7 @@ for sprint in sprintlist
     # milestonelistorder.push(milestoneobject)
     milestoneorder+=1
     milestones.push(newmilestone)
+    total_activity+=1
 end
 totaluserpoints=0.0
 
@@ -509,17 +510,6 @@ for item in storylist
         else
             priority="Low"
         end
-        puts "returning bug priority"
-        puts priority
-        
-# <Priority id="1" sequence="1" name="Highest" description="This problem will block progress." iconurl="/images/icons/priorities/highest.png" statusColor="#d04437"/>
-#     <Priority id="2" sequence="2" name="High" description="Serious problem that could block progress." iconurl="/images/icons/priorities/high.svg" statusColor="#ff6600"/>
-#     <Priority id="3" sequence="3" name="Medium" description="Has the potential to affect progress." iconurl="/images/icons/priorities/medium.svg" statusColor="#ffff00"/>
-#     <Priority id="4" sequence="4" name="Low" description="Minor problem or easily worked around." iconurl="/images/icons/priorities/low.svg" statusColor="#00cc33"/>
-#     <Priority id="5" sequence="5" name="Lowest" description="Trivial problem with little or no impact on progress." iconurl="/images/icons/priorities/lowest.svg" statusColor="#0000ff"/>
-
-
-
         issue={
             "votes": [],
             "created_date": DateTime.parse(item["created"],'%Q'),
@@ -552,6 +542,7 @@ for item in storylist
         puts "this type is not included in the import: "+item['type']
     end 
     backlogorder+=1
+    total_activity+=1
 end
 
 # if totalpoints is float add .5
@@ -564,9 +555,6 @@ total_story_points=totaluserpoints.to_i
 
 timeline=[] # this is ok to be empty, very possible to generate although low priority and usernames impossible
 
-# puts "default points"
-# puts defaultpoints
-# exit
 # this is what is populated from the above variables
 tempjson=
     {
@@ -584,7 +572,7 @@ tempjson=
 "issuecustomattributes": [],
 "default_priority": "Normal",
 "total_fans_last_year": 0,
-"wiki_links": wiki_links,
+"wiki_links": wiki_links, # needs to include each wikipage
 "created_date": dateprojectcreated, # datetime format e.g. "2016-10-31T14:13:34+0000",
 "creation_template": "scrum",
 "default_issue_status": "New",
@@ -618,8 +606,8 @@ tempjson=
 "memberships": memberships,
 "tags": project_tags,
 "roles": [{"order": 10, "computable": true, "name": "UX", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "ux"}, {"order": 20, "computable": true, "name": "Design", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "design"}, {"order": 30, "computable": true, "name": "Front", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "front"}, {"order": 40, "computable": true, "name": "Back", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "back"}, {"order": 50, "computable": false, "name": "Product Owner", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "add_milestone", "modify_milestone", "delete_milestone", "view_milestones", "view_project", "add_task", "modify_task", "delete_task", "view_tasks", "add_us", "modify_us", "delete_us", "view_us", "add_wiki_page", "modify_wiki_page", "delete_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "add_epic", "modify_epic", "delete_epic", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "product-owner"}, {"order": 60, "computable": false, "name": "Stakeholder", "permissions": ["add_issue", "modify_issue", "delete_issue", "view_issues", "view_milestones", "view_project", "view_tasks", "view_us", "modify_wiki_page", "view_wiki_pages", "add_wiki_link", "delete_wiki_link", "view_wiki_links", "view_epics", "comment_epic", "comment_us", "comment_task", "comment_issue", "comment_wiki_page"], "slug": "stakeholder"}],
-"description": description,
-"total_activity": 32, #needs to be recalculated
+"description": description, # project description
+"total_activity": total_activity, #uses all default points, really this isn't points, but activity or amount of tasks created
 "issue_statuses": [{"order": 1, "name": "New", "color": "#8C2318", "is_closed": false, "slug": "new"}, {"order": 2, "name": "In progress", "color": "#5E8C6A", "is_closed": false, "slug": "in-progress"}, {"order": 3, "name": "Ready for test", "color": "#88A65E", "is_closed": true, "slug": "ready-for-test"}, {"order": 4, "name": "Closed", "color": "#BFB35A", "is_closed": true, "slug": "closed"}, {"order": 5, "name": "Needs Info", "color": "#89BAB4", "is_closed": false, "slug": "needs-info"}, {"order": 6, "name": "Rejected", "color": "#CC0000", "is_closed": true, "slug": "rejected"}, {"order": 7, "name": "Postponed", "color": "#666666", "is_closed": false, "slug": "postponed"}],
 "is_wiki_activated": true, # true b/c credits would be deleted otherwise
 "is_backlog_activated": true,
