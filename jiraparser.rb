@@ -71,8 +71,8 @@ end
 
 
 
-jira_entities = "entities.xml"
-jira_active = "activeobjects.xml"
+jira_entities = "jira_xml_databases/entities.xml"
+jira_active = "jira_xml_databases/activeobjects.xml"
 @doc = Nokogiri::XML(only_valid_chars(jira_entities))
 @activeObjects=Nokogiri::XML(File.open(jira_active))
 #run this to check that whole document reads
