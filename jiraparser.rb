@@ -586,7 +586,10 @@ for item in storylist
         if status=="Done"
             finished_date=DateTime.parse(item["updated"],'%Q')
         end
-        priority=@doc.xpath("//Priority[@id='"+item["Priority"]+"']/@name").to_s
+        puts "getting priority"
+        puts item["id"]
+        puts item["priority"]
+        priority=@doc.xpath("//Priority[@id='"+item["priority"]+"']/@name").to_s
         case priority
         when "High","Highest"
             priority="High"
@@ -597,6 +600,9 @@ for item in storylist
         else
             priority="Low"
         end
+        puts "returning bug priority"
+        puts priority
+        
 # <Priority id="1" sequence="1" name="Highest" description="This problem will block progress." iconurl="/images/icons/priorities/highest.png" statusColor="#d04437"/>
 #     <Priority id="2" sequence="2" name="High" description="Serious problem that could block progress." iconurl="/images/icons/priorities/high.svg" statusColor="#ff6600"/>
 #     <Priority id="3" sequence="3" name="Medium" description="Has the potential to affect progress." iconurl="/images/icons/priorities/medium.svg" statusColor="#ffff00"/>
@@ -627,10 +633,10 @@ for item in storylist
             "tags": [],
             "version": backlogorder,
             "attachments": [],
-            "external_reference": null,
+            "external_reference": nil,
             "description": item['description'].to_s
             }
-        issuelist.push(issue)
+        issueslist.push(issue)
         # if any sub tasks these will be ignored, although they could be added into the description
         # issuelist
     else
