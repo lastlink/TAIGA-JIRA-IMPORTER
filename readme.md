@@ -24,8 +24,10 @@
     * Taiga (json database for each project)
 * Parser program 
     * Python element tree (having issues I think it's because of emoticons in the jira xml)
-    * Ruby default for now
-        * nokogiri ruby xml reader (PROGRESS)
+    * Ruby DEFAULT for now
+        * nokogiri ruby xml reader 
+            * Works great for xml b/c if invalid characters aka emoticons will read until that point
+            * now that I have the query mappings done I can easily port to the others
     * Pearl - heard good for parsing may build one as well
 
 
@@ -40,6 +42,10 @@
 * Jira tasks are treated as stories
 * Priority is only used for bug issues
 * Any only sub tasks for Tasks and stories are imported any others are ignored
+* Ordering of tasks may be somewhat randomized by when created
+* Sprints have stories successfully linked
+* Epics have tasks successfully linked
+* Tags/Labels are supported
 
 ###Jira xml notes
 * project id is 24
@@ -59,5 +65,6 @@
 * [x] sprints/milestones, userstories, subtasks, and tasks Supported
 * [x] Epics 
 * [x] Issues - only bugs
+* [ ] Cleaup code
 * [ ] generate json files for each project in xml database (right now done manually by name given)
 * [ ] make milestone dynamic right now sprint story board namespace is hard coded in
